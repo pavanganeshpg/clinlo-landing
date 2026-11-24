@@ -1653,18 +1653,22 @@
       }
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 768px), (hover: none) and (pointer: coarse) {
       /* =============================================================
          MOBILE COMPOSITOR & SCROLL SMOOTHNESS (ZERO DESKTOP IMPACT)
          ============================================================= */
       /* 1. Replace background-attachment: fixed (forces CPU repaints on Android Chrome)
-            with GPU-composited fixed .bg-grid backdrop */
+            with GPU-composited fixed .bg-grid backdrop (locked to 100lvh so URL bar
+            collapse/expand never resizes or re-rasterizes the fixed layer mid-scroll) */
       body {
         background-image: none;
         background-attachment: scroll;
       }
       .bg-grid {
         opacity: 1;
+        bottom: auto;
+        height: 100vh;
+        height: 100lvh;
         background-color: #f6fafd;
         background-image:
           linear-gradient(to right, rgba(203, 213, 225, 0.15) 1px, transparent 1px),
@@ -1678,12 +1682,12 @@
         will-change: transform;
       }
 
-      /* 2. Anchor fixed mobile navbar cleanly flush at top:0 (eliminates transparent gap
-            above/around the white pill where scrolling headings peeked and popped through) */
+      /* 2. Anchor fixed mobile navbar cleanly flush at top:0 with solid opaque backdrop
+            (eliminates transparent gap and text bleed where scrolling headings popped through) */
       header.site-header {
         padding: var(--sat) 0 0;
-        background: rgba(246, 250, 253, 0.99);
-        border-bottom: 1px solid rgba(203, 213, 225, 0.55);
+        background: #f6fafd;
+        border-bottom: 1px solid rgba(203, 213, 225, 0.65);
         box-shadow: 0 4px 20px rgba(14, 165, 233, 0.08);
         transform: translate3d(0, 0, 0);
         will-change: transform;
@@ -2509,7 +2513,7 @@
     // MOUSE POINTER PARALLAX TO 3D AVATAR
     // -------------------------------------------------------------
     window.addEventListener('pointermove', (e) => {
-      if (!isStudioVisible || isPageScrolling) return;
+      if (!isStudioVisible || isPageScrolling || e.pointerType === 'touch') return;
       const iframe = document.getElementById('clinlo-3d-frame');
       if (iframe && iframe.contentWindow) {
         const nx = (e.clientX / window.innerWidth) * 2 - 1;

@@ -2900,8 +2900,9 @@
       controls.update();
     }
 
-    // Pointer event listeners (captures mouse and touch moves across entire screen)
+    // Pointer event listeners (captures mouse/pen parallax; ignores touch scroll in embedded iframe)
     window.addEventListener('pointermove', (e) => {
+      if (isEmbeddedInIframe && e.pointerType === 'touch') return;
       const nx = (e.clientX / window.innerWidth) * 2 - 1;
       const ny = (e.clientY / window.innerHeight) * 2 - 1;
       setTiltPointer(nx, ny);
@@ -2938,8 +2939,10 @@
     document.body.addEventListener('pointerleave', () => resetTiltPointer(), { passive: true });
     window.addEventListener('pointerleave', () => resetTiltPointer(), { passive: true });
     window.addEventListener('blur', () => resetTiltPointer());
-    window.addEventListener('touchstart', () => requestFrame(), { passive: true });
-    window.addEventListener('touchend', () => requestFrame(), { passive: true });
+    if (!isEmbeddedInIframe) {
+      window.addEventListener('touchstart', () => requestFrame(), { passive: true });
+      window.addEventListener('touchend', () => requestFrame(), { passive: true });
+    }
     window.addEventListener('click', () => requestFrame(), { passive: true });
 
     window.hoverTiltState = hoverTiltState;
@@ -3093,12 +3096,39 @@
 
     const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
 
-    // Studio Reflection Map
+    // Studio Reflection Map (remaps pitch-black studio walls on mobile into soft cool periwinkle bounce)
+    const isMobileOrLowTier = isMobile || (hardware && hardware.tier <= 1);
     try {
-      const envMap = await textureLoader.loadAsync('./map/GSG_PRO_STUDIOS_METAL_001_sm.webp');
-      envMap.mapping = THREE.EquirectangularReflectionMapping;
-      envMap.anisotropy = maxAnisotropy;
-      scene.environment = envMap;
+      const rawEnv = await textureLoader.loadAsync('./map/GSG_PRO_STUDIOS_METAL_001_sm.webp');
+      if (isMobileOrLowTier && rawEnv.image) {
+        const c = document.createElement('canvas');
+        c.width = rawEnv.image.width || 512;
+        c.height = rawEnv.image.height || 256;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(rawEnv.image, 0, 0, c.width, c.height);
+        const imgData = ctx.getImageData(0, 0, c.width, c.height);
+        const d = imgData.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const r = d[i], g = d[i + 1], b = d[i + 2];
+          const lum = (r * 0.299 + g * 0.587 + b * 0.114) / 255;
+          if (lum < 0.72) {
+            const t = Math.pow(1.0 - lum / 0.72, 1.3) * 0.88;
+            d[i]     = Math.round(r + (166 - r) * t);
+            d[i + 1] = Math.round(g + (183 - g) * t);
+            d[i + 2] = Math.round(b + (230 - b) * t);
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+        const studioEnv = new THREE.CanvasTexture(c);
+        studioEnv.colorSpace = THREE.SRGBColorSpace;
+        studioEnv.mapping = THREE.EquirectangularReflectionMapping;
+        studioEnv.anisotropy = maxAnisotropy;
+        scene.environment = studioEnv;
+      } else {
+        rawEnv.mapping = THREE.EquirectangularReflectionMapping;
+        rawEnv.anisotropy = maxAnisotropy;
+        scene.environment = rawEnv;
+      }
     } catch (e) {
       console.warn('Reflection Map load:', e);
     }
@@ -3324,36 +3354,31 @@
     normalMap.magFilter = THREE.LinearFilter;
 
     // Ground truth from Noomo production (Bnwl1Oju.js):
-    // On mobile devices (or low-tier hardware), transmission is set to 0 while using a single-pass
-    // depth pre-pass + luminous pearlescent sheen + vertex tangents + highp precision to eliminate
-    // self-overlap double-blending seams and fp16 NaN dark grey holes while keeping 60 FPS!
-    const isMobileOrLowTier = isMobile || (hardware && hardware.tier <= 1);
+    // On mobile devices (or low-tier hardware), transmission is set to 0 while pairing a luminous
+    // cool-periwinkle studio envMap + crystal glass tint + crisp clearcoat + vertex tangents + highp
+    // precision in a single depthWrite pass to match desktop's glass look with zero NaN holes and 50% fewer triangles.
     const canUseIridescence = !hardware || hardware.supportsHighp !== false;
     const skinMaterialFemale = new THREE.MeshPhysicalMaterial(
       isMobileOrLowTier ? {
-        color: 0xffffff,
-        emissive: new THREE.Color(0xdbeafe),
-        emissiveIntensity: 0.11,
-        roughness: 0.15,
-        metalness: 0.02,
+        color: 0xdbe4ff,
+        roughness: 0.08,
+        metalness: 0.033,
         transmission: 0.0,
         thickness: 0.0,
         ior: 1.55,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.12,
+        clearcoatRoughness: 0.04,
         reflectivity: 1.0,
         iridescence: canUseIridescence ? 1.0 : 0.0,
         iridescenceIOR: 1.453,
-        iridescenceThicknessRange: [120, 480],
-        sheen: 0.42,
-        sheenRoughness: 0.65,
-        sheenColor: new THREE.Color(0xf0f7ff),
-        envMapIntensity: 0.78,
-        opacity: 0.42,
+        sheen: 0.326,
+        sheenRoughness: 1.0,
+        sheenColor: new THREE.Color(0x000000),
+        envMapIntensity: 1.05,
+        opacity: 0.34,
         transparent: true,
-        depthWrite: false,
+        depthWrite: true,
         depthTest: true,
-        depthFunc: THREE.LessEqualDepth,
         normalMap: normalMap,
         normalScale: new THREE.Vector2(0.12, 0.12)
       } : {
@@ -3380,10 +3405,10 @@
 
     const skinMaterialMale = skinMaterialFemale.clone();
 
-    // Perlin noise organic dissolve shader on male & female avatar rigs
-    function setupSkinDissolveShader(material, id, initialDissolve = 0.15, sharedDissolveUniform = null, isDepthOnly = false) {
-      material.userData.uDissolve = sharedDissolveUniform || { value: initialDissolve };
-      material.customProgramCacheKey = () => (isDepthOnly ? 'dissolve_depth_' : 'dissolve_skin_') + id;
+    // Perlin noise organic dissolve shader on male & female avatar rigs (shared program cache key across genders)
+    function setupSkinDissolveShader(material, initialDissolve = 0.15) {
+      material.userData.uDissolve = { value: initialDissolve };
+      material.customProgramCacheKey = () => 'dissolve_skin_shared';
       material.onBeforeCompile = (shader) => {
         shader.uniforms.uDissolve = material.userData.uDissolve;
         material.userData.shader = shader;
@@ -3478,8 +3503,7 @@
         shader.fragmentShader = shader.fragmentShader.replace(
           '#include <dithering_fragment>',
           `#include <dithering_fragment>
-           ${isDepthOnly ? '' : 'gl_FragColor.rgb = max(gl_FragColor.rgb, vec3(0.0));'}
-           ${(!isDepthOnly && isMobileOrLowTier) ? 'gl_FragColor.rgb = max(gl_FragColor.rgb, mix(gl_FragColor.rgb, vec3(0.80, 0.83, 0.97), 0.62));' : ''}
+           gl_FragColor.rgb = max(gl_FragColor.rgb, vec3(0.0));
            if (uDissolve > 0.001) {
              if (uDissolve >= 0.999) {
                discard;
@@ -3488,62 +3512,124 @@
              if (noiseValue < uDissolve) {
                discard;
              }
-             ${isDepthOnly ? '' : `float edgeThickness = 0.04 * (1.0 - smoothstep(0.7, 1.0, uDissolve));
+             float edgeThickness = 0.04 * (1.0 - smoothstep(0.7, 1.0, uDissolve));
              if (noiseValue < uDissolve + edgeThickness) {
                gl_FragColor.rgb += vec3(0.25 * (1.0 - smoothstep(0.8, 1.0, uDissolve)));
-             }`}
+             }
            }`
         );
       };
     }
 
-    setupSkinDissolveShader(skinMaterialFemale, 'female', 0.0);
-    setupSkinDissolveShader(skinMaterialMale, 'male', 1.0);
+    setupSkinDissolveShader(skinMaterialFemale, 0.0);
+    setupSkinDissolveShader(skinMaterialMale, 1.0);
 
-    function createDepthPrePassMaterial(id, sharedDissolveUniform) {
-      const mat = new THREE.MeshBasicMaterial({
-        colorWrite: false,
-        depthWrite: true,
-        depthTest: true,
-        polygonOffset: true,
-        polygonOffsetFactor: 0.5,
-        polygonOffsetUnits: 1
-      });
-      setupSkinDissolveShader(mat, id, sharedDissolveUniform.value, sharedDissolveUniform, true);
-      return mat;
+    // Zero-allocation typed-array tangent computation (avoids 760k Vector3 GC objects on mobile)
+    function computeTangentsFast(geometry) {
+      const index = geometry.index;
+      const posAttr = geometry.attributes.position;
+      const normAttr = geometry.attributes.normal;
+      const uvAttr = geometry.attributes.uv;
+      if (!index || !posAttr || !normAttr || !uvAttr) return;
+
+      const indices = index.array;
+      const positions = posAttr.array;
+      const normals = normAttr.array;
+      const uvs = uvAttr.array;
+      const nVertices = posAttr.count;
+
+      const tan1 = new Float32Array(nVertices * 3);
+      const tan2 = new Float32Array(nVertices * 3);
+      const tangents = new Float32Array(nVertices * 4);
+
+      const groups = geometry.groups.length > 0 ? geometry.groups : [{ start: 0, count: indices.length }];
+      for (let g = 0; g < groups.length; g++) {
+        const start = groups[g].start;
+        const end = start + groups[g].count;
+        for (let j = start; j < end; j += 3) {
+          const a = indices[j], b = indices[j + 1], c = indices[j + 2];
+          const a3 = a * 3, b3 = b * 3, c3 = c * 3;
+          const a2 = a * 2, b2 = b * 2, c2 = c * 2;
+
+          const x1 = positions[b3] - positions[a3];
+          const y1 = positions[b3 + 1] - positions[a3 + 1];
+          const z1 = positions[b3 + 2] - positions[a3 + 2];
+          const x2 = positions[c3] - positions[a3];
+          const y2 = positions[c3 + 1] - positions[a3 + 1];
+          const z2 = positions[c3 + 2] - positions[a3 + 2];
+
+          const s1 = uvs[b2] - uvs[a2];
+          const t1 = uvs[b2 + 1] - uvs[a2 + 1];
+          const s2 = uvs[c2] - uvs[a2];
+          const t2 = uvs[c2 + 1] - uvs[a2 + 1];
+
+          const det = s1 * t2 - s2 * t1;
+          if (Math.abs(det) < 1e-12) continue;
+          const r = 1.0 / det;
+
+          const sx = (x1 * t2 - x2 * t1) * r;
+          const sy = (y1 * t2 - y2 * t1) * r;
+          const sz = (z1 * t2 - z2 * t1) * r;
+          const tx = (x2 * s1 - x1 * s2) * r;
+          const ty = (y2 * s1 - y1 * s2) * r;
+          const tz = (z2 * s1 - z1 * s2) * r;
+
+          tan1[a3] += sx; tan1[a3 + 1] += sy; tan1[a3 + 2] += sz;
+          tan1[b3] += sx; tan1[b3 + 1] += sy; tan1[b3 + 2] += sz;
+          tan1[c3] += sx; tan1[c3 + 1] += sy; tan1[c3 + 2] += sz;
+
+          tan2[a3] += tx; tan2[a3 + 1] += ty; tan2[a3 + 2] += tz;
+          tan2[b3] += tx; tan2[b3 + 1] += ty; tan2[b3 + 2] += tz;
+          tan2[c3] += tx; tan2[c3 + 1] += ty; tan2[c3 + 2] += tz;
+        }
+      }
+
+      for (let i = 0; i < nVertices; i++) {
+        const i3 = i * 3, i4 = i * 4;
+        const nx = normals[i3], ny = normals[i3 + 1], nz = normals[i3 + 2];
+        const tx = tan1[i3], ty = tan1[i3 + 1], tz = tan1[i3 + 2];
+
+        const ndott = nx * tx + ny * ty + nz * tz;
+        let ox = tx - nx * ndott;
+        let oy = ty - ny * ndott;
+        let oz = tz - nz * ndott;
+        let len = Math.hypot(ox, oy, oz);
+        if (len < 1e-8) {
+          // Deterministic fallback tangent perpendicular to normal for UV-degenerate vertices
+          if (Math.abs(nx) < 0.9) {
+            ox = 0; oy = nz; oz = -ny;
+          } else {
+            ox = -nz; oy = 0; oz = nx;
+          }
+          len = Math.hypot(ox, oy, oz) || 1.0;
+        }
+        const inv = 1.0 / len;
+        ox *= inv; oy *= inv; oz *= inv;
+
+        const cx = ny * tz - nz * ty;
+        const cy = nz * tx - nx * tz;
+        const cz = nx * ty - ny * tx;
+        const w = (cx * tan2[i3] + cy * tan2[i3 + 1] + cz * tan2[i3 + 2]) < 0.0 ? -1.0 : 1.0;
+
+        tangents[i4] = ox;
+        tangents[i4 + 1] = oy;
+        tangents[i4 + 2] = oz;
+        tangents[i4 + 3] = w;
+      }
+      geometry.setAttribute('tangent', new THREE.BufferAttribute(tangents, 4));
     }
 
-    function configureAvatarScene(avatarScene, skinMat, id) {
-      const originalMeshes = [];
+    function configureAvatarScene(avatarScene, skinMat) {
       avatarScene.traverse(node => {
         if (node.isMesh) {
-          originalMeshes.push(node);
-        }
-      });
-
-      const depthMat = isMobileOrLowTier ? createDepthPrePassMaterial(id, skinMat.userData.uDissolve) : null;
-
-      originalMeshes.forEach(node => {
-        if (isMobileOrLowTier && node.geometry && node.geometry.index && node.geometry.attributes.position && node.geometry.attributes.normal && node.geometry.attributes.uv) {
-          try {
-            node.geometry.computeTangents();
-          } catch (e) {}
-        }
-        node.material = skinMat;
-        node.renderOrder = isMobileOrLowTier ? 3 : 2;
-        if (node.geometry) node.geometry.computeBoundingSphere();
-        node.matrixAutoUpdate = false;
-        node.updateMatrix();
-
-        if (depthMat && node.parent) {
-          const depthMesh = new THREE.Mesh(node.geometry, depthMat);
-          depthMesh.position.copy(node.position);
-          depthMesh.rotation.copy(node.rotation);
-          depthMesh.scale.copy(node.scale);
-          depthMesh.renderOrder = 2;
-          depthMesh.matrixAutoUpdate = false;
-          depthMesh.updateMatrix();
-          node.parent.add(depthMesh);
+          if (isMobileOrLowTier && node.geometry) {
+            computeTangentsFast(node.geometry);
+          }
+          node.material = skinMat;
+          node.renderOrder = 2;
+          if (node.geometry) node.geometry.computeBoundingSphere();
+          node.matrixAutoUpdate = false;
+          node.updateMatrix();
         }
       });
 
@@ -3560,11 +3646,11 @@
       ]);
 
       femaleAvatar = femaleGltf.scene;
-      configureAvatarScene(femaleAvatar, skinMaterialFemale, 'female');
+      configureAvatarScene(femaleAvatar, skinMaterialFemale);
       scene.add(femaleAvatar);
 
       maleAvatar = maleGltf.scene;
-      configureAvatarScene(maleAvatar, skinMaterialMale, 'male');
+      configureAvatarScene(maleAvatar, skinMaterialMale);
       maleAvatar.visible = false;
       scene.add(maleAvatar);
     } catch (e) {
@@ -4222,10 +4308,10 @@
         exploreHormonesIcon.src = femaleActive ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUiIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAzNSAzNSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTcuMjM1NyIgY3k9IjEyLjg0MTUiIHI9IjEwIiB0cmFuc2Zvcm09InJvdGF0ZSgxMzMuMTQ4IDE3LjIzNTcgMTIuODQxNSkiIHN0cm9rZT0iYmxhY2siLz4KPHBhdGggZD0iTTE3LjIxMzcgMjMuMTAwNkwxNy4yMTM3IDI3LjUwMU0xNy4yMTM3IDI3LjUwMUwxMi40MDM2IDI3LjUwMU0xNy4yMTM3IDI3LjUwMUwxNy4yMTM3IDMxLjVNMTcuMjEzNyAyNy41MDFMMjIuMDY5MyAyNy41MDEiIHN0cm9rZT0iYmxhY2siLz4KPC9zdmc+Cg==' : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjciIGhlaWdodD0iMjciIHZpZXdCb3g9IjAgMCAyNyAyNyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTEuMzU3MSIgY3k9IjE1LjY0MjgiIHI9IjEwLjg1NzEiIHN0cm9rZT0iYmxhY2siLz4KPHBhdGggZD0iTTE5LjQ2ODggOC4wNzE0M0wyNi40OTk0IDEuNTgxNjNNMjYuNDk5NCAxLjU4MTYzTDE5LjQ2ODggMC41TTI2LjQ5OTQgMS41ODE2M1Y4LjYxMjI0IiBzdHJva2U9ImJsYWNrIi8+Cjwvc3ZnPgo=';
       }
 
-      let targetOpacity = isMobileOrLowTier ? 0.42 : 0.38;
-      let targetRoughness = isMobileOrLowTier ? 0.15 : 0.12;
+      let targetOpacity = isMobileOrLowTier ? 0.34 : 0.38;
+      let targetRoughness = isMobileOrLowTier ? 0.08 : 0.12;
       if (state === 'slider') {
-        targetOpacity = isMobileOrLowTier ? 0.16 : 0.14;
+        targetOpacity = isMobileOrLowTier ? 0.15 : 0.14;
         targetRoughness = 0.05;
       }
       if (state === 'story') {
@@ -4720,6 +4806,7 @@
     };
 
     // Smart Power-Aware Demand-Driven Render & Animation Engine with Resilient Lifecycle Guards
+    gsap.ticker.lagSmoothing(0);
 
     const TARGET_FRAME_MS = 1000 / 60; // 60fps target during interaction
     const LOW_POWER_FRAME_MS = 1000 / 30; // 30fps low-power pacing for subtle breath
