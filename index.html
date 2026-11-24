@@ -2126,7 +2126,7 @@
           <!-- Live Site View Counter Banner -->
           <div class="live-views-banner" id="live-views-container">
             <span class="live-status-dot"></span>
-            <span class="views-metric"><strong id="site-views-counter">1,693</strong> Site Visitors</span>
+            <span class="views-metric"><strong id="site-views-counter">1,705</strong> Site Visitors</span>
             <span class="views-divider">•</span>
             <span class="views-subtext">CLINLO Wellness Center Pre-Orders Live</span>
           </div>
@@ -2785,7 +2785,7 @@
               try {
                 wfData = await wfRes.json();
               } catch (e) {}
-              if (wfRes.ok && wfData && wfData.success) {
+              if (wfRes.ok && wfData && (wfData.success === true || wfData.success === 'true')) {
                 staticTransmitted = true;
                 emailTransmitted = true;
               } else {
@@ -3031,7 +3031,7 @@ Please confirm onboarding schedule and founding membership reservation.`
           alert('No leads recorded in browser storage yet.');
           return;
         }
-        const headers = ['ticket', 'name', 'phone', 'email', 'plan', 'plan_name', 'plan_price', 'original_price', 'centralSynced', 'emailTransmitted', 'deliveryStatus', 'adminNotified', 'timestamp'];
+        const headers = ['ticket', 'name', 'phone', 'email', 'plan', 'plan_name', 'plan_price', 'original_price', 'centralSynced', 'emailTransmitted', 'deliveryStatus', 'failureReason', 'adminNotified', 'timestamp'];
         const csvRows = [headers.join(',')];
         for (const l of stored) {
           const row = headers.map(h => sanitizeCsvCell(l[h] ?? ''));
