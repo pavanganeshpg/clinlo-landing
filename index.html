@@ -33,6 +33,7 @@
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#e0f2fe">
   <meta name="clinlo-api-endpoint" content="">
+  <meta name="clinlo-views-endpoint" content="">
   <meta name="clinlo-webhook-url" content="">
   <meta name="clinlo-web3forms-key" content="">
 
@@ -2125,7 +2126,7 @@
           <!-- Live Site View Counter Banner -->
           <div class="live-views-banner" id="live-views-container">
             <span class="live-status-dot"></span>
-            <span class="views-metric"><strong id="site-views-counter">1,666</strong> Site Visitors</span>
+            <span class="views-metric"><strong id="site-views-counter">1,693</strong> Site Visitors</span>
             <span class="views-divider">•</span>
             <span class="views-subtext">CLINLO Wellness Center Pre-Orders Live</span>
           </div>
@@ -2260,9 +2261,9 @@
           <!-- Interactive Confirmation / Honest Error State -->
           <div id="waitlist-success" class="waitlist-feedback" role="alert" aria-live="polite">
             <div id="waitlist-status-icon" style="font-size: 2.2rem; margin-bottom: 0.5rem; color: var(--cyan-600, #0284c7);">✓</div>
-            <h3 id="waitlist-status-title" style="font-size: 1.35rem; font-weight: 800; color: #09122c; margin-bottom: 0.35rem;">Founding Pre-Order Confirmed</h3>
-            <p id="waitlist-status-subtitle" style="color: #475569; font-size: 0.95rem; margin-bottom: 0.75rem;">Your wellness membership pre-registration has been recorded & transmitted:</p>
-            <div id="waitlist-ticket-number" class="waitlist-ticket" style="margin-bottom: 1.25rem;">TICKET #CLINLO-1842</div>
+            <h3 id="waitlist-status-title" style="font-size: 1.35rem; font-weight: 800; color: #09122c; margin-bottom: 0.35rem;">Submission Status</h3>
+            <p id="waitlist-status-subtitle" style="color: #475569; font-size: 0.95rem; margin-bottom: 0.75rem;">Processing your wellness membership pre-registration...</p>
+            <div id="waitlist-ticket-number" class="waitlist-ticket" style="margin-bottom: 1.25rem;">TICKET #CLINLO-PENDING</div>
 
             <div id="waitlist-fallback-actions" style="display: none; margin-bottom: 1rem;">
               <div class="waitlist-dispatch-actions" style="margin-top: 0.25rem; margin-bottom: 0.9rem;">
@@ -2462,13 +2463,15 @@
     const isLocalHost = hostName === 'localhost' || hostName === '127.0.0.1' || window.location.protocol === 'file:' || !hostName;
     const isPureStaticHost = hostName.endsWith('.github.io') || hostName === 'github.io' || hostName.endsWith('.pages.dev') || hostName.endsWith('.netlify.app') || hostName.endsWith('.vercel.app') || hostName === 'clinlo.com' || hostName === 'www.clinlo.com';
     const metaApiEndpoint = (document.querySelector('meta[name="clinlo-api-endpoint"]')?.getAttribute('content') || '').trim();
+    const metaViewsEndpoint = (document.querySelector('meta[name="clinlo-views-endpoint"]')?.getAttribute('content') || '').trim();
     const metaWebhookUrl = (document.querySelector('meta[name="clinlo-webhook-url"]')?.getAttribute('content') || '').trim();
     const metaWeb3FormsKey = (document.querySelector('meta[name="clinlo-web3forms-key"]')?.getAttribute('content') || '').trim();
     const defaultApiEndpoint = isLocalHost ? 'http://127.0.0.1:8086/api/waitlist' : (isPureStaticHost ? '' : '/api/waitlist');
-    window.CLINLO_API_ENDPOINT = window.CLINLO_API_ENDPOINT || window.CLINLO_WAITLIST_ENDPOINT || metaApiEndpoint || defaultApiEndpoint;
-    window.CLINLO_WEBHOOK_URL = window.CLINLO_WEBHOOK_URL || metaWebhookUrl || '';
-    window.CLINLO_WEB3FORMS_KEY = window.CLINLO_WEB3FORMS_KEY || metaWeb3FormsKey || '';
-    window.CLINLO_VIEWS_ENDPOINT = window.CLINLO_VIEWS_ENDPOINT || (isLocalHost ? 'http://127.0.0.1:8086/api/views' : (isPureStaticHost ? '' : '/api/views'));
+    const defaultViewsEndpoint = isLocalHost ? 'http://127.0.0.1:8086/api/views' : (isPureStaticHost ? '' : '/api/views');
+    window.CLINLO_API_ENDPOINT = window.CLINLO_API_ENDPOINT ?? window.CLINLO_WAITLIST_ENDPOINT ?? (metaApiEndpoint || defaultApiEndpoint);
+    window.CLINLO_WEBHOOK_URL = window.CLINLO_WEBHOOK_URL ?? (metaWebhookUrl || '');
+    window.CLINLO_WEB3FORMS_KEY = window.CLINLO_WEB3FORMS_KEY ?? (metaWeb3FormsKey || '');
+    window.CLINLO_VIEWS_ENDPOINT = window.CLINLO_VIEWS_ENDPOINT ?? (metaViewsEndpoint || defaultViewsEndpoint);
 
     // Accurate Site View Counter Sync
     async function initSiteViewCounter() {
@@ -2553,8 +2556,15 @@
       const ticketEl = document.getElementById('waitlist-ticket-number');
       const fallbackActionsEl = document.getElementById('waitlist-fallback-actions');
 
-      // 1. Anti-bot honeypot evaluation
+      // 1. Anti-bot honeypot evaluation (silently sink bots without leaking stale placeholder state)
       if (hpInput && hpInput.value) {
+        if (feedback) feedback.classList.remove('is-warning', 'is-error');
+        if (ticketEl) ticketEl.classList.remove('is-warning', 'is-error');
+        if (iconEl) { iconEl.textContent = '✓'; iconEl.style.color = 'var(--cyan-600, #0284c7)'; }
+        if (titleEl) titleEl.textContent = 'Request Received';
+        if (subtitleEl) subtitleEl.textContent = 'Your submission has been processed.';
+        if (ticketEl) ticketEl.textContent = 'REF #CLINLO-BOT-SINK';
+        if (fallbackActionsEl) fallbackActionsEl.style.display = 'none';
         form.style.display = 'none';
         feedback.style.display = 'block';
         return;
@@ -2609,6 +2619,7 @@
       let backendRecorded = false;
       let staticTransmitted = false;
       let emailTransmitted = false;
+      let backendFailureReason = '';
       let lastFailureReason = '';
 
       try {
@@ -2664,11 +2675,13 @@
               if (
                 resData.email_sent === false ||
                 delivery === 'QUEUED_LOCAL' ||
+                delivery === 'KV_STORED_ONLY' ||
                 delivery.startsWith('SMTP_ERROR') ||
                 delivery.startsWith('WEBHOOK_ERROR')
               ) {
                 emailTransmitted = false;
-                lastFailureReason = resData.message || delivery || 'SMTP email delivery inactive';
+                backendFailureReason = resData.message || delivery || 'SMTP email delivery inactive';
+                lastFailureReason = backendFailureReason;
               } else {
                 emailTransmitted = true;
               }
@@ -2743,27 +2756,28 @@
             try {
               const wfCtrl = new AbortController();
               const wfTid = setTimeout(() => wfCtrl.abort(), 10000);
+              const wfPayload = {
+                access_key: web3FormsKey,
+                subject: `CLINLO Pre-Order [TICKET #${confirmedTicket}] - ${name}`,
+                from_name: 'CLINLO Pre-Orders',
+                ticket: confirmedTicket,
+                name,
+                phone,
+                ...(email ? { email } : { contact_channel: 'WhatsApp / Phone Direct Concierge' }),
+                plan: planName,
+                plan_key: planKey,
+                price: `₹${planPrice} (${planPeriod})`,
+                original_price: `₹${originalPrice}`,
+                admin_target: 'admin@clinlo.com',
+                timestamp: new Date().toISOString()
+              };
               const wfRes = await fetch('https://api.web3forms.com/submit', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json'
                 },
-                body: JSON.stringify({
-                  access_key: web3FormsKey,
-                  subject: `CLINLO Pre-Order [TICKET #${confirmedTicket}] - ${name}`,
-                  from_name: 'CLINLO Pre-Orders',
-                  ticket: confirmedTicket,
-                  name,
-                  phone,
-                  email: email || 'Not Provided (WhatsApp / Phone Direct Concierge)',
-                  plan: planName,
-                  plan_key: planKey,
-                  price: `₹${planPrice} (${planPeriod})`,
-                  original_price: `₹${originalPrice}`,
-                  admin_target: 'admin@clinlo.com',
-                  timestamp: new Date().toISOString()
-                }),
+                body: JSON.stringify(wfPayload),
                 signal: wfCtrl.signal
               });
               clearTimeout(wfTid);
@@ -2849,6 +2863,9 @@
         const deliveryStatus = isVerifiedTransmitted
           ? 'TRANSMITTED'
           : (backendRecorded ? 'LOCAL_LEDGER_ONLY' : 'FAILED');
+        const effectiveFailureReason = isVerifiedTransmitted
+          ? ''
+          : ((backendRecorded && backendFailureReason) ? backendFailureReason : lastFailureReason);
 
         // 4. Save accurate status to local storage cache
         const record = {
@@ -2864,7 +2881,7 @@
           centralSynced: isVerifiedTransmitted || backendRecorded,
           emailTransmitted: isVerifiedTransmitted,
           deliveryStatus,
-          failureReason: isVerifiedTransmitted ? '' : lastFailureReason,
+          failureReason: effectiveFailureReason,
           adminNotified: 'admin@clinlo.com',
           timestamp: new Date().toISOString()
         };
@@ -2923,7 +2940,7 @@ Please confirm onboarding schedule and founding membership reservation.`
           if (iconEl) { iconEl.textContent = 'ℹ'; iconEl.style.color = '#d97706'; }
           if (titleEl) titleEl.textContent = isLocalHost ? 'Saved Locally — Email Pending' : 'Saved on Server — Email Pending';
           if (subtitleEl) {
-            subtitleEl.textContent = `Your pre-order was saved to the server ledger, but automatic email delivery to admin@clinlo.com is inactive (${lastFailureReason || 'SMTP/email relay not configured'}).`;
+            subtitleEl.textContent = `Your pre-order was saved to the server ledger, but automatic email delivery to admin@clinlo.com is inactive (${effectiveFailureReason || 'SMTP/email relay not configured'}).`;
           }
           if (ticketEl) ticketEl.textContent = 'TICKET #' + confirmedTicket;
           if (fallbackActionsEl) fallbackActionsEl.style.display = 'block';
@@ -2933,7 +2950,7 @@ Please confirm onboarding schedule and founding membership reservation.`
           if (iconEl) { iconEl.textContent = '⚠'; iconEl.style.color = '#dc2626'; }
           if (titleEl) titleEl.textContent = 'Transmission Failed — Not Yet Received';
           if (subtitleEl) {
-            subtitleEl.textContent = `We could not deliver your pre-order to admin@clinlo.com (${lastFailureReason || 'remote relay unavailable'}). Your details are kept in this browser — please retry or send directly below:`;
+            subtitleEl.textContent = `We could not deliver your pre-order to admin@clinlo.com (${effectiveFailureReason || 'remote relay unavailable'}). Your details are kept in this browser — please retry or send directly below:`;
           }
           if (ticketEl) ticketEl.textContent = 'DRAFT #' + confirmedTicket + ' • NOT SENT';
           if (fallbackActionsEl) fallbackActionsEl.style.display = 'block';
