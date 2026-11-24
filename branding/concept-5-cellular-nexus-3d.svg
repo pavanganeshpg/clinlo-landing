@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>Concept 5: Cellular Nexus 3D Liquid Glass</title>
+  <defs>
+    <linearGradient id="squircleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#010835"/>
+      <stop offset="50%" stop-color="#010835"/>
+      <stop offset="100%" stop-color="#0774c4"/>
+    </linearGradient>
+    <linearGradient id="coreGrad" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#38bdf8"/>
+      <stop offset="75%" stop-color="#0774c4"/>
+      <stop offset="100%" stop-color="#010835"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Full Canvas Squircle Kiosk Container (area > 80% to qualify as on-tile) -->
+  <rect x="10.00" y="10.00" width="236.00" height="236.00" rx="56.00" fill="url(#squircleGrad)"/>
+
+  <!-- Optical Specular Glare -->
+  <path d="M 24.00 48.00 C 44.00 24.00 80.00 16.00 128.00 16.00 C 68.00 18.00 36.00 36.00 24.00 48.00 Z" fill="#ffffff" opacity="0.35"/>
+
+  <!-- Concentric Orbital Nodes -->
+  <g fill="#38bdf8" opacity="0.6">
+    <circle cx="128.00" cy="58.00" r="6.00"/>
+    <circle cx="188.62" cy="163.00" r="6.00"/>
+    <circle cx="67.38" cy="163.00" r="6.00"/>
+    <circle cx="128.00" cy="204.00" r="4.00"/>
+    <circle cx="52.00" cy="128.00" r="4.00"/>
+    <circle cx="204.00" cy="128.00" r="4.00"/>
+  </g>
+
+  <!-- Central Liquid Glass Cellular Core -->
+  <g id="glass-lobes" fill="url(#coreGrad)">
+    <path d="M 128.00 58.00 C 152.00 58.00 170.00 82.00 164.00 110.00 C 158.00 138.00 138.00 146.00 134.00 150.00 C 126.00 142.00 120.00 94.00 128.00 58.00 Z"/>
+    <path d="M 188.62 163.00 C 176.62 183.78 146.84 187.37 125.59 168.18 C 104.34 148.98 107.41 127.66 105.95 122.20 C 116.88 119.27 161.44 138.07 188.62 163.00 Z "/>
+    <path d="M 67.38 163.00 C 55.38 142.22 67.16 114.63 94.41 105.82 C 121.66 97.02 138.59 110.34 144.05 111.80 C 141.12 122.73 102.56 151.93 67.38 163.00 Z "/>
+  </g>
+  <circle cx="128.00" cy="128.00" r="12.00" fill="#ffffff"/>
+  <circle cx="128.00" cy="128.00" r="6.00" fill="#010835"/>
+</svg>

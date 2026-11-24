@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" fill="none">
+  <title>Clinlo Flat Vector App Icon</title>
+  <rect width="512" height="512" rx="115" fill="#010835"/>
+  <g fill="#38bdf8">
+    <ellipse cx="312.21" cy="341.18" rx="43.50" ry="60.06" transform="rotate(56.79, 312.21, 341.18)"/>
+    <ellipse cx="178.67" cy="369.90" rx="36.00" ry="49.81" transform="rotate(56.23, 178.67, 369.90)"/>
+    <ellipse cx="112.30" cy="304.69" rx="28.70" ry="39.71" transform="rotate(56.70, 112.30, 304.69)"/>
+    <ellipse cx="128.37" cy="221.03" rx="21.48" ry="29.70" transform="rotate(56.34, 128.37, 221.03)"/>
+    <ellipse cx="189.58" cy="156.64" rx="17.42" ry="24.68" transform="rotate(57.25, 189.58, 156.64)"/>
+    <ellipse cx="272.28" cy="125.58" rx="21.16" ry="30.01" transform="rotate(56.09, 272.28, 125.58)"/>
+    <ellipse cx="355.98" cy="142.64" rx="28.78" ry="39.46" transform="rotate(55.80, 355.98, 142.64)"/>
+    <ellipse cx="390.32" cy="229.25" rx="36.18" ry="49.88" transform="rotate(56.57, 390.32, 229.25)"/>
+  </g>
+</svg>

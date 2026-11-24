@@ -1,0 +1,17 @@
+{
+  "name": "CLINLO — Intelligent Biometric Mapping",
+  "short_name": "CLINLO",
+  "description": "Next-generation intelligent biometric mapping and preventive healthcare platform.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#010835",
+  "theme_color": "#010835",
+  "icons": [
+    {
+      "src": "./branding/clinlo_emblem_navy.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinlo (clinlo.com) · Official Brand Identity & Logo Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --card-border: rgba(226, 232, 240, 0.9);
+      --text-primary: #010835;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --brand-navy: #010835;
+      --brand-sapphire: #0774c4;
+      --brand-sky: #38bdf8;
+      --brand-ice: #bae6fd;
+      --card-shadow: 0 10px 30px -10px rgba(1, 8, 53, 0.08), 0 4px 6px -2px rgba(1, 8, 53, 0.04);
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg: #010835;
+      --card-bg: rgba(14, 26, 68, 0.75);
+      --card-border: rgba(56, 189, 248, 0.18);
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #64748b;
+      --card-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6), 0 0 20px rgba(7, 116, 196, 0.25);
+    }
+
+    [data-theme="glass"] {
+      --bg: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 40%, #7dd3fc 100%);
+      --card-bg: rgba(255, 255, 255, 0.55);
+      --card-border: rgba(255, 255, 255, 0.7);
+      --text-primary: #010835;
+      --text-secondary: #1e293b;
+      --text-muted: #64748b;
+      --card-shadow: 0 20px 40px rgba(7, 116, 196, 0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 40px 24px;
+      transition: background 0.4s ease, color 0.4s ease;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .brand-meta {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .brand-meta img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+    }
+
+    .brand-title h1 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .brand-title p {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      margin-top: 2px;
+    }
+
+    .theme-switcher {
+      display: flex;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 999px;
+      padding: 4px;
+      gap: 4px;
+      box-shadow: var(--card-shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .theme-btn {
+      border: none;
+      background: transparent;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .theme-btn.active {
+      background: var(--brand-sapphire);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(7, 116, 196, 0.4);
+    }
+
+    /* Rationale Card */
+    .hero-banner {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin-bottom: 36px;
+      box-shadow: var(--card-shadow);
+      backdrop-filter: blur(16px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    .hero-text h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .hero-text p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      max-width: 720px;
+    }
+
+    .domain-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      background: rgba(7, 116, 196, 0.12);
+      border: 1px solid rgba(7, 116, 196, 0.25);
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--brand-sapphire);
+    }
+
+    .domain-badge::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+    }
+
+    /* Grid Sections */
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin: 40px 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 18px;
+      background: var(--brand-sapphire);
+      border-radius: 2px;
+    }
+
+    .logo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 24px;
+    }
+
+    .logo-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: var(--card-shadow);
+      backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .logo-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .logo-preview-box {
+      height: 220px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .preview-light { background: #ffffff; }
+    .preview-dark { background: #010835; }
+    .preview-glass { background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(186,230,253,0.3)); }
+    .preview-checker {
+      background-color: #f1f5f9;
+      background-image: linear-gradient(45deg, #e2e8f0 25%, transparent 25%), linear-gradient(-45deg, #e2e8f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e2e8f0 75%), linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+    }
+
+    .logo-preview-box img {
+      max-width: 80%;
+      max-height: 80%;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.06));
+    }
+
+    .card-info h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .card-info p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 16px;
+      flex-grow: 1;
+    }
+
+    .card-meta {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(7, 116, 196, 0.1);
+      color: var(--brand-sapphire);
+      font-weight: 600;
+    }
+
+    .badge-success {
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .btn {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--brand-sapphire);
+      color: #ffffff;
+      border: none;
+    }
+    .btn-primary:hover {
+      background: #0284c7;
+    }
+
+    .btn-secondary {
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--text-primary);
+      border: 1px solid var(--card-border);
+    }
+    .btn-secondary:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    /* Scale Tester */
+    .scale-tester {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: var(--card-shadow);
+      margin-top: 24px;
+    }
+
+    .scale-row {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--card-border);
+      flex-wrap: wrap;
+    }
+    .scale-row:last-child { border-bottom: none; }
+
+    .scale-label {
+      width: 140px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .scale-display {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .scale-box-dark {
+      padding: 12px 20px;
+      border-radius: 10px;
+      background: #010835;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .scale-box-light {
+      padding: 12px 20px;
+      border-radius: 10px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Color Swatches */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .color-swatch {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .color-swatch:hover {
+      transform: translateY(-2px);
+    }
+
+    .swatch-fill {
+      height: 80px;
+      width: 100%;
+    }
+
+    .swatch-info {
+      padding: 12px;
+    }
+
+    .swatch-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .swatch-hex {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #010835;
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.25s ease;
+      pointer-events: none;
+      z-index: 1000;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    footer {
+      margin-top: 64px;
+      text-align: center;
+      padding: 32px 0;
+      border-top: 1px solid var(--card-border);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <div class="container">
+    <header>
+      <div class="brand-meta">
+        <img src="clinlo_emblem_3d_glass.svg" alt="Clinlo Logo">
+        <div class="brand-title">
+          <h1>Clinlo · Official Brand Identity</h1>
+          <p>8-Node Perspective Biometric Vortex · clinlo.com</p>
+        </div>
+      </div>
+      <div class="theme-switcher">
+        <button class="theme-btn active" onclick="setTheme('light')">Light</button>
+        <button class="theme-btn" onclick="setTheme('dark')">Dark (OLED)</button>
+        <button class="theme-btn" onclick="setTheme('glass')">Liquid Glass</button>
+      </div>
+    </header>
+
+    <!-- Domain & Rationale Hero -->
+    <div class="hero-banner">
+      <div class="hero-text">
+        <h2>The Clinlo 8-Node Perspective Vortex</h2>
+        <p>
+          Derived from the user's authentic mark: 8 progressive elliptical nodes positioned at a 56.5° focal perspective tilt with 0.723 aspect foreshortening. Represents clinical intelligence, whole-body organ telemetry, cellular longevity, and continuous diagnostic monitoring.
+        </p>
+      </div>
+      <div class="domain-badge">
+        clinlo.com
+      </div>
+    </div>
+
+    <!-- Core Identity Suite Grid -->
+    <div class="section-title">Master Identity Suite</div>
+    <div class="logo-grid">
+
+      <!-- Card 1: Master Navy -->
+      <div class="logo-card">
+        <div class="logo-preview-box preview-light">
+          <img src="clinlo_emblem_navy.svg" alt="Clinlo Master Navy">
+        </div>
+        <div class="card-info">
+          <h3>Clinlo Master Emblem · Midnight Navy</h3>
+          <p>The pure mathematical ground truth. Centered with optical symmetry (L=40, R=40, T=52.5, B=52.5). 100% production ready.</p>
+          <div class="card-meta">
+            <span class="badge">#010835</span>
+            <span class="badge badge-success">Audit: 100/100</span>
+            <span class="badge">Pure Vector</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="clinlo_emblem_navy.svg" download class="btn btn-primary">SVG Vector</a>
+          <a href="renders/clinlo_emblem_navy.png" download class="btn btn-secondary">PNG 1024px</a>
+        </div>
+      </div>
+
+      <!-- Card 2: 3D Liquid Glass -->
+      <div class="logo-card">
+        <div class="logo-preview-box preview-dark">
+          <img src="clinlo_emblem_3d_glass.svg" alt="Clinlo 3D Liquid Glass">
+        </div>
+        <div class="card-info">
+          <h3>Clinlo 3D Liquid Glass Emblem</h3>
+          <p>Synergistic with the Three.js WebGL shaders on clinlo.com. Depth gradient along the 56.5° tilt axis with specular rim refraction.</p>
+          <div class="card-meta">
+            <span class="badge">Three.js Shader</span>
+            <span class="badge">Iridescent Glass</span>
+            <span class="badge">Hero Splash</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="clinlo_emblem_3d_glass.svg" download class="btn btn-primary">SVG Vector</a>
+          <a href="renders/clinlo_emblem_3d_glass.png" download class="btn btn-secondary">PNG 1024px</a>
+        </div>
+      </div>
+
+      <!-- Card 3: Biometric HUD Scanner -->
+      <div class="logo-card">
+        <div class="logo-preview-box preview-light">
+          <img src="clinlo_biometric_scanner.svg" alt="Clinlo Biometric Scanner">
+        </div>
+        <div class="card-info">
+          <h3>Biometric Health ATM Emblem</h3>
+          <p>Clinical diagnostic HUD telemetry aperture ring with concentric calibration crosshairs encircling the 8-node vortex.</p>
+          <div class="card-meta">
+            <span class="badge badge-success">Audit: 98/100</span>
+            <span class="badge">HUD Aperture</span>
+            <span class="badge">Telemetry Ring</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="clinlo_biometric_scanner.svg" download class="btn btn-primary">SVG Vector</a>
+          <a href="renders/clinlo_biometric_scanner.png" download class="btn btn-secondary">PNG 1024px</a>
+        </div>
+      </div>
+
+      <!-- Card 4: Horizontal Lockup Navy -->
+      <div class="logo-card">
+        <div class="logo-preview-box preview-light">
+          <img src="clinlo_lockup_horizontal.svg" alt="Clinlo Master Lockup" style="max-width: 90%;">
+        </div>
+        <div class="card-info">
+          <h3>Clinlo Master Brand Lockup</h3>
+          <p>Complete official brand lockup with outlined typographical wordmark. 0 live text dependencies, renders identically anywhere.</p>
+          <div class="card-meta">
+            <span class="badge">viewBox 176x56</span>
+            <span class="badge badge-success">Audit: 98/100</span>
+            <span class="badge">Outlined Glyphs</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="clinlo_lockup_horizontal.svg" download class="btn btn-primary">SVG Vector</a>
+          <a href="renders/clinlo_lockup_horizontal.png" download class="btn btn-secondary">PNG 1100px</a>
+        </div>
+      </div>
+
+      <!-- Card 5: Horizontal Lockup White -->
+      <div class="logo-card">
+        <div class="logo-preview-box preview-dark">
+          <img src="clinlo_lockup_white.svg" alt="Clinlo White Lockup" style="max-width: 90%;">
+        </div>
+        <div class="card-info">
+          <h3>Clinlo White Transparent Lockup</h3>
+          <p>Crafted specifically for dark mode navigation bars, frosted glassmorphic UI, and mobile headers on clinlo.com.</p>
+          <div class="card-meta">
+            <span class="badge">#FFFFFF</span>
+            <span class="badge badge-success">Audit: 98/100</span>
+            <span class="badge">Glass Compatible</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="clinlo_lockup_white.svg" download class="btn btn-primary">SVG Vector</a>
+          <a href="renders/clinlo_lockup_white.png" download class="btn btn-secondary">PNG 1100px</a>
+        </div>
+      </div>
+
+      <!-- Card 6: App Icon 512 -->
+      <div class="logo-card">
+        <div class="logo-preview-box preview-checker">
+          <img src="clinlo_app_icon_512.svg" alt="Clinlo App Icon" style="max-width: 65%; border-radius: 22%;">
+        </div>
+        <div class="card-info">
+          <h3>Mobile & PWA App Icon (512×512)</h3>
+          <p>Apple squircle curvature with deep midnight radial gradient backdrop and floating Clinlo liquid glass vortex.</p>
+          <div class="card-meta">
+            <span class="badge">512x512 PWA</span>
+            <span class="badge">iOS / Android</span>
+            <span class="badge">Squircle</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="clinlo_app_icon_512.svg" download class="btn btn-primary">SVG Vector</a>
+          <a href="renders/clinlo_app_icon_512.png" download class="btn btn-secondary">PNG 512px</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Scalability Testing Bench -->
+    <div class="section-title">Multi-Scale Optical Test Bench</div>
+    <div class="scale-tester">
+      <div class="scale-row">
+        <div class="scale-label">16px (Favicon)</div>
+        <div class="scale-display">
+          <div class="scale-box-light">
+            <img src="clinlo_emblem_navy.svg" width="16" height="16">
+            <img src="clinlo_emblem_sapphire.svg" width="16" height="16">
+          </div>
+          <div class="scale-box-dark">
+            <img src="clinlo_emblem_white.svg" width="16" height="16">
+            <img src="clinlo_emblem_3d_glass.svg" width="16" height="16">
+          </div>
+          <span style="font-size: 12px; color: var(--text-muted);">Instant silhouette recognition at micro scale</span>
+        </div>
+      </div>
+      <div class="scale-row">
+        <div class="scale-label">24px (Mobile Nav)</div>
+        <div class="scale-display">
+          <div class="scale-box-light">
+            <img src="clinlo_emblem_navy.svg" width="24" height="24">
+            <img src="clinlo_lockup_horizontal.svg" height="18">
+          </div>
+          <div class="scale-box-dark">
+            <img src="clinlo_emblem_white.svg" width="24" height="24">
+            <img src="clinlo_lockup_white.svg" height="18">
+          </div>
+        </div>
+      </div>
+      <div class="scale-row">
+        <div class="scale-label">48px (Desktop UI)</div>
+        <div class="scale-display">
+          <div class="scale-box-light">
+            <img src="clinlo_emblem_navy.svg" width="48" height="48">
+            <img src="clinlo_lockup_horizontal.svg" height="32">
+          </div>
+          <div class="scale-box-dark">
+            <img src="clinlo_emblem_3d_glass.svg" width="48" height="48">
+            <img src="clinlo_lockup_white.svg" height="32">
+          </div>
+        </div>
+      </div>
+      <div class="scale-row">
+        <div class="scale-label">128px (Hero Splash)</div>
+        <div class="scale-display">
+          <img src="clinlo_emblem_3d_glass.svg" width="128" height="128">
+          <img src="clinlo_biometric_scanner.svg" width="128" height="128">
+        </div>
+      </div>
+    </div>
+
+    <!-- Color Swatches -->
+    <div class="section-title">Design System Color Palette (Click to Copy)</div>
+    <div class="color-grid">
+      <div class="color-swatch" onclick="copyHex('#010835')">
+        <div class="swatch-fill" style="background: #010835;"></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Midnight Navy</div>
+          <div class="swatch-hex">#010835</div>
+        </div>
+      </div>
+      <div class="color-swatch" onclick="copyHex('#0774c4')">
+        <div class="swatch-fill" style="background: #0774c4;"></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Electric Sapphire</div>
+          <div class="swatch-hex">#0774C4</div>
+        </div>
+      </div>
+      <div class="color-swatch" onclick="copyHex('#38bdf8')">
+        <div class="swatch-fill" style="background: #38bdf8;"></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Sky Frost</div>
+          <div class="swatch-hex">#38BDF8</div>
+        </div>
+      </div>
+      <div class="color-swatch" onclick="copyHex('#bae6fd')">
+        <div class="swatch-fill" style="background: #bae6fd;"></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Ice Glass</div>
+          <div class="swatch-hex">#BAE6FD</div>
+        </div>
+      </div>
+      <div class="color-swatch" onclick="copyHex('#ffffff')">
+        <div class="swatch-fill" style="background: #ffffff; border-bottom: 1px solid var(--card-border);"></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Pure White</div>
+          <div class="swatch-hex">#FFFFFF</div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      Clinlo (clinlo.com) · 3D Health ATM Brand Identity System · Designed with Antigravity & Logo Design Tools
+    </footer>
+  </div>
+
+  <div id="toast" class="toast">Copied to clipboard!</div>
+
+  <script>
+    function setTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase().includes(theme));
+      });
+    }
+
+    function copyHex(hex) {
+      navigator.clipboard.writeText(hex);
+      const toast = document.getElementById('toast');
+      toast.textContent = 'Copied ' + hex + ' to clipboard!';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+  </script>
+</body>
+</html>

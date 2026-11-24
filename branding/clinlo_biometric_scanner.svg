@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" fill="none">
+  <title>Clinlo Biometric Health ATM Emblem</title>
+  <!-- Concentric Diagnostic HUD Rings -->
+  <circle cx="128" cy="128" r="105" stroke="#0774c4" stroke-width="1.5" stroke-dasharray="6 6" stroke-opacity="0.4"/>
+  <circle cx="128" cy="128" r="116" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.25"/>
+  <!-- Telemetry Calibration Ticks -->
+  <line x1="128" y1="8" x2="128" y2="18" stroke="#0774c4" stroke-width="2"/>
+  <line x1="128" y1="238" x2="128" y2="248" stroke="#0774c4" stroke-width="2"/>
+  <line x1="8" y1="128" x2="18" y2="128" stroke="#0774c4" stroke-width="2"/>
+  <line x1="238" y1="128" x2="248" y2="128" stroke="#0774c4" stroke-width="2"/>
+  <g id="clinlo-core">
+    <ellipse cx="155.42" cy="169.55" rx="21.22" ry="29.30" transform="rotate(56.79, 155.42, 169.55)" fill="#010835"/>
+    <ellipse cx="90.28" cy="183.56" rx="17.56" ry="24.30" transform="rotate(56.23, 90.28, 183.56)" fill="#010835"/>
+    <ellipse cx="57.90" cy="151.75" rx="14.00" ry="19.37" transform="rotate(56.70, 57.90, 151.75)" fill="#010835"/>
+    <ellipse cx="65.74" cy="110.94" rx="10.48" ry="14.49" transform="rotate(56.34, 65.74, 110.94)" fill="#010835"/>
+    <ellipse cx="95.60" cy="79.53" rx="8.50" ry="12.04" transform="rotate(57.25, 95.60, 79.53)" fill="#010835"/>
+    <ellipse cx="135.94" cy="64.38" rx="10.32" ry="14.64" transform="rotate(56.09, 135.94, 64.38)" fill="#010835"/>
+    <ellipse cx="176.77" cy="72.70" rx="14.04" ry="19.25" transform="rotate(55.80, 176.77, 72.70)" fill="#010835"/>
+    <ellipse cx="193.52" cy="114.95" rx="17.65" ry="24.33" transform="rotate(56.57, 193.52, 114.95)" fill="#010835"/>
+  </g>
+</svg>

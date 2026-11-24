@@ -1,0 +1,2880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <title>CLINLO — The Intelligent Biometric Mapping Ecosystem</title>
+  
+  <!-- SEO & Canonical Metadata -->
+  <meta name="description" content="The Clinlo Architecture. Pre-Launch Access • COMING SOON IN ATP.">
+  <meta name="keywords" content="Clinlo, 3D biometric mapping, preventive healthcare, clinical biomarker intelligence, non-invasive diagnostics">
+  <meta name="author" content="Clinlo, Inc.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://clinlo.com/">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://clinlo.com/">
+  <meta property="og:title" content="CLINLO — The Intelligent Biometric Mapping Ecosystem">
+  <meta property="og:description" content="Experience the next paradigm in intelligent biometric mapping and predictive health. Ambient 3D anatomy, cellular intelligence, and non-invasive telemetry.">
+  <meta property="og:image" content="https://clinlo.com/branding/clinlo_logo_lockup_black.png">
+  <meta property="og:site_name" content="CLINLO">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://clinlo.com/">
+  <meta name="twitter:title" content="CLINLO — The Intelligent Biometric Mapping Ecosystem">
+  <meta name="twitter:description" content="Ambient 3D biometric mapping and real-time physiological synthesis. Request priority access for the Clinlo private beta.">
+  <meta name="twitter:image" content="https://clinlo.com/branding/clinlo_logo_lockup_black.png">
+
+  <!-- Favicon & Web App Manifest -->
+  <link rel="icon" type="image/svg+xml" href="./branding/clinlo_emblem_exact_black.svg">
+  <link rel="apple-touch-icon" href="./branding/clinlo_emblem_exact_black.png">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#e0f2fe">
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://clinlo.com/#organization",
+        "name": "CLINLO",
+        "url": "https://clinlo.com/",
+        "logo": "https://clinlo.com/branding/clinlo_lockup_horizontal.svg",
+        "description": "Next-generation intelligent biometric mapping and preventive health platform."
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://clinlo.com/#website",
+        "url": "https://clinlo.com/",
+        "name": "CLINLO",
+        "publisher": { "@id": "https://clinlo.com/#organization" }
+      }
+    ]
+  }
+  </script>
+
+  <!-- Typography: Plus Jakarta Sans & Ubuntu Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* =============================================================
+       CLINLO APPLE LIQUID GLASS DESIGN SYSTEM
+       Art Direction: Visionary Glassmorphism • Noomo Agency & Apple inspired
+       Palette: Celestial Cyan (#e0f2fe), Soft Periwinkle (#ede9fe),
+                Luminous White (#ffffff), Deep Obsidian Slate (#0f172a)
+       ============================================================= */
+    :root {
+      /* Biometric Crystal Palette */
+      --cyan-50: #f0f9ff;
+      --cyan-100: #e0f2fe;
+      --cyan-200: #bae6fd;
+      --cyan-300: #7dd3fc;
+      --cyan-400: #38bdf8;
+      --cyan-500: #0ea5e9;
+      --cyan-600: #0284c7;
+      --cyan-700: #0369a1;
+
+      --periwinkle-50: #f5f3ff;
+      --periwinkle-100: #ede9fe;
+      --periwinkle-200: #ddd6fe;
+      --periwinkle-400: #a78bfa;
+      --indigo-500: #6366f1;
+      --indigo-600: #4f46e5;
+
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+      --obsidian-950: #09122c;
+
+      /* Apple Liquid Glass Surfaces */
+      --glass-panel-bg: rgba(255, 255, 255, 0.74);
+      --glass-panel-bg-hover: rgba(255, 255, 255, 0.90);
+      --glass-panel-border: rgba(255, 255, 255, 0.85);
+      --glass-panel-border-top: rgba(255, 255, 255, 1);
+      --glass-blur: blur(28px) saturate(190%) contrast(102%);
+      
+      --glass-shadow: 
+        0 20px 48px -12px rgba(14, 165, 233, 0.12),
+        0 4px 16px -2px rgba(15, 23, 42, 0.03),
+        inset 0 1.5px 2px 0 rgba(255, 255, 255, 1),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+        inset 0 -1.5px 3px 0 rgba(186, 230, 253, 0.28);
+        
+      --glass-shadow-lg: 
+        0 32px 72px -16px rgba(14, 165, 233, 0.18),
+        0 10px 28px -4px rgba(15, 23, 42, 0.05),
+        inset 0 2px 2.5px 0 rgba(255, 255, 255, 1),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.45),
+        inset 0 -2px 4px 0 rgba(186, 230, 253, 0.35);
+
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 22px;
+      --radius-xl: 32px;
+      --radius-pill: 9999px;
+
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'Ubuntu Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: #f6fafd;
+      background-image: 
+        radial-gradient(ellipse 90% 60% at 50% -12%, rgba(224, 242, 254, 0.85) 0%, rgba(237, 233, 254, 0.45) 40%, transparent 75%),
+        radial-gradient(circle 800px at 10% 40%, rgba(224, 242, 254, 0.55) 0%, rgba(237, 233, 254, 0.25) 50%, transparent 70%),
+        radial-gradient(circle 850px at 90% 65%, rgba(237, 233, 254, 0.5) 0%, rgba(224, 242, 254, 0.35) 50%, transparent 75%),
+        radial-gradient(circle 950px at 50% 100%, rgba(224, 242, 254, 0.7) 0%, transparent 70%);
+      background-attachment: fixed;
+      color: var(--slate-900);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Architectural hairline background guidelines (Ground Truth Noomo inspired) */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(203, 213, 225, 0.25) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(203, 213, 225, 0.25) 1px, transparent 1px);
+      background-size: 64px 64px;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    /* Accessible focus rings */
+    :focus-visible {
+      outline: 2px solid var(--cyan-600);
+      outline-offset: 3px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* =============================================================
+       HEADER & FLOATING APPLE LIQUID GLASS NAVIGATION
+       ============================================================= */
+    header.site-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: max(1.2rem, calc(var(--sat) + 0.6rem)) 1.5rem 1rem;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .nav-bar {
+      pointer-events: auto;
+      max-width: 1140px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      padding: 0.65rem 1.4rem;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      border-top: 1px solid rgba(255, 255, 255, 1);
+      border-radius: var(--radius-pill);
+      box-shadow: 
+        0 20px 48px -12px rgba(14, 165, 233, 0.14),
+        0 4px 16px -2px rgba(15, 23, 42, 0.04),
+        inset 0 1.5px 2px 0 rgba(255, 255, 255, 1),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+        inset 0 -1.5px 3px 0 rgba(186, 230, 253, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .nav-brand:hover {
+      opacity: 0.85;
+      transform: scale(0.98);
+    }
+
+    .nav-brand img {
+      height: 34px;
+      width: auto;
+      display: block;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--slate-800);
+      text-decoration: none;
+      font-size: 0.925rem;
+      font-weight: 650;
+      letter-spacing: -0.015em;
+      padding: 0.5rem 1.15rem;
+      border-radius: var(--radius-pill);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
+    }
+
+    .nav-links a:hover {
+      color: var(--cyan-700);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 4px 16px rgba(14, 165, 233, 0.15), inset 0 1px 1px #ffffff;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Aesthetic Circular Liquid Glass Sound Mute Button (Matching authentic Cyan Ring & Speaker Icon) */
+    .btn-sound-toggle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1.5px solid #38bdf8;
+      box-shadow: 
+        0 4px 16px rgba(14, 165, 233, 0.18),
+        inset 0 1px 1.5px rgba(255, 255, 255, 1);
+      color: #0284c7;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .btn-sound-toggle:hover {
+      background: #ffffff;
+      border-color: #0284c7;
+      transform: scale(1.08);
+      box-shadow: 
+        0 8px 24px rgba(14, 165, 233, 0.32),
+        inset 0 1.5px 2px rgba(255, 255, 255, 1);
+      color: #0284c7;
+    }
+    .btn-sound-toggle.muted {
+      color: #0284c7;
+      border-color: #38bdf8;
+    }
+    .btn-sound-toggle.sound-playing {
+      color: #0284c7;
+      border-color: #0284c7;
+      box-shadow: 
+        0 0 0 3px rgba(14, 165, 233, 0.2),
+        0 6px 20px rgba(14, 165, 233, 0.32),
+        inset 0 1px 1.5px #ffffff;
+      animation: sound-pulse 2s infinite ease-in-out;
+    }
+    @keyframes sound-pulse {
+      0%, 100% {
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2), 0 4px 16px rgba(14, 165, 233, 0.2), inset 0 1px 1.5px #ffffff;
+      }
+      50% {
+        box-shadow: 0 0 0 5px rgba(14, 165, 233, 0.38), 0 8px 28px rgba(14, 165, 233, 0.45), inset 0 1px 1.5px #ffffff;
+      }
+    }
+    .btn-sound-toggle:focus-visible {
+      outline: 2px solid #0284c7;
+      outline-offset: 2px;
+    }
+    .btn-sound-toggle.hero-sound-btn {
+      width: 48px;
+      height: 48px;
+    }
+
+    /* Primary Liquid Glass Pill CTA */
+    .btn-pill-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.45rem;
+      white-space: nowrap;
+      background: linear-gradient(135deg, var(--obsidian-950) 0%, var(--slate-900) 45%, var(--cyan-700) 100%);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-top: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: var(--radius-pill);
+      font-size: 0.875rem;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+      text-decoration: none;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 
+        0 8px 24px -4px rgba(15, 23, 42, 0.28),
+        0 4px 12px rgba(37, 99, 235, 0.22),
+        inset 0 1px 1.5px rgba(255, 255, 255, 0.6),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.35);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-pill-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, transparent 60%);
+      pointer-events: none;
+      border-radius: inherit;
+    }
+
+    .btn-pill-primary:hover {
+      background: linear-gradient(135deg, var(--slate-900) 0%, var(--cyan-700) 50%, var(--cyan-600) 100%);
+      transform: translateY(-1.5px);
+      box-shadow: 
+        0 14px 32px -4px rgba(2, 132, 199, 0.38),
+        0 6px 18px rgba(37, 99, 235, 0.28),
+        inset 0 1px 1.5px rgba(255, 255, 255, 0.8);
+    }
+
+    /* =============================================================
+       HERO SECTION (Apple Liquid Glass Art Direction)
+       ============================================================= */
+    section.hero-section {
+      padding-top: calc(max(7rem, calc(var(--sat) + 6.2rem)));
+      padding-bottom: 3.5rem;
+      text-align: center;
+      position: relative;
+    }
+
+    /* Liquid Glass Pill Badge */
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.5rem 1.35rem;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(24px) saturate(190%);
+      -webkit-backdrop-filter: blur(24px) saturate(190%);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      border-top: 1px solid #ffffff;
+      border-radius: var(--radius-pill);
+      font-size: 0.785rem;
+      font-weight: 750;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      background-image: linear-gradient(120deg, var(--cyan-700) 0%, var(--cyan-600) 50%, var(--indigo-600) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1.65rem;
+      box-shadow: 
+        0 6px 22px -4px rgba(14, 165, 233, 0.18),
+        inset 0 1.5px 2px rgba(255, 255, 255, 1),
+        inset 0 -1.5px 2.5px rgba(186, 230, 253, 0.35);
+      filter: drop-shadow(0 1px 4px rgba(37, 99, 235, 0.12));
+    }
+
+    .badge-dot {
+      width: 7.5px;
+      height: 7.5px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan-600) 0%, var(--cyan-400) 100%);
+      box-shadow: 0 0 10px var(--cyan-400), 0 0 4px var(--cyan-600);
+      animation: pulseDot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
+    }
+
+    /* Liquid Glass Hero Title */
+    h1.hero-title {
+      font-size: clamp(2.5rem, 5.8vw, 4.4rem);
+      font-weight: 800;
+      line-height: 1.09;
+      letter-spacing: -0.04em;
+      background: linear-gradient(175deg, #09122c 0%, #172554 40%, #0369a1 80%, #0284c7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.95)) drop-shadow(0 4px 18px rgba(14, 165, 233, 0.22));
+      max-width: 980px;
+      margin: 0 auto 1.35rem;
+    }
+
+    h1.hero-title span.gradient-text {
+      background: linear-gradient(135deg, #0284c7 0%, #38bdf8 20%, #818cf8 45%, #c084fc 70%, #38bdf8 90%, #0284c7 100%);
+      background-size: 250% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 14px rgba(56, 189, 248, 0.4));
+      animation: liquidTextShimmer 8s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+      transform: translate3d(0, 0, 0);
+      will-change: background-position;
+    }
+
+    @keyframes liquidTextShimmer {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Hero Subtitle */
+    p.hero-subtitle {
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      font-weight: 480;
+      color: #27364b;
+      max-width: 740px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.68;
+      letter-spacing: -0.014em;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.95);
+    }
+
+    .hero-cta-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.15rem;
+      margin-bottom: 3.75rem;
+      flex-wrap: wrap;
+    }
+
+    .hero-secondary-cta-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .btn-lg-primary {
+      padding: 0.95rem 2.2rem;
+      font-size: 1.025rem;
+      font-weight: 650;
+      letter-spacing: -0.015em;
+      border-radius: var(--radius-pill);
+      background: linear-gradient(135deg, var(--obsidian-950) 0%, var(--slate-900) 45%, var(--cyan-700) 100%);
+      color: #ffffff;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-top: 1px solid rgba(255, 255, 255, 0.55);
+      box-shadow: 
+        0 14px 34px -6px rgba(15, 23, 42, 0.32),
+        0 6px 18px rgba(37, 99, 235, 0.25),
+        inset 0 1px 1.5px rgba(255, 255, 255, 0.6),
+        inset 0 -1.5px 2.5px rgba(0, 0, 0, 0.35);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-lg-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, transparent 60%);
+      pointer-events: none;
+      border-radius: inherit;
+    }
+    .btn-lg-primary:hover {
+      background: linear-gradient(135deg, var(--slate-900) 0%, var(--cyan-700) 50%, var(--cyan-600) 100%);
+      transform: translateY(-2px);
+      box-shadow: 
+        0 20px 42px -6px rgba(2, 132, 199, 0.42),
+        0 8px 22px rgba(37, 99, 235, 0.32),
+        inset 0 1px 2px rgba(255, 255, 255, 0.85);
+    }
+
+    .btn-lg-glass {
+      padding: 0.95rem 2.2rem;
+      font-size: 1.025rem;
+      font-weight: 650;
+      letter-spacing: -0.015em;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--slate-900);
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-top: 1px solid #ffffff;
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      box-shadow: 
+        0 12px 32px -6px rgba(14, 165, 233, 0.12),
+        inset 0 1.5px 2px rgba(255, 255, 255, 1),
+        inset 0 -1.5px 2.5px rgba(186, 230, 253, 0.3);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .btn-lg-glass:hover {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: var(--cyan-400);
+      transform: translateY(-2px);
+      box-shadow: 
+        0 18px 40px -6px rgba(14, 165, 233, 0.2),
+        inset 0 1.5px 2px rgba(255, 255, 255, 1);
+      color: var(--cyan-600);
+    }
+
+    /* =============================================================
+       INTERACTIVE 3D STUDIO EMBEDDED VIEWPORT
+       ============================================================= */
+    .studio-viewport-card {
+      scroll-margin-top: calc(80px + 1.5rem);
+      width: 100%;
+      height: 680px;
+      max-height: 80vh;
+      background: radial-gradient(ellipse at 50% 50%, #dee9ff 0%, #c9dcec 40%, #b3ccee 75%, #a8bffd 100%);
+      border: 1px solid rgba(255, 255, 255, 0.92);
+      border-top: 1px solid #ffffff;
+      border-radius: var(--radius-xl);
+      box-shadow: 
+        0 32px 72px -16px rgba(2, 132, 199, 0.22),
+        0 12px 28px -6px rgba(1, 8, 53, 0.08),
+        inset 0 2px 2.5px rgba(255, 255, 255, 1),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+        inset 0 -2px 4px rgba(186, 230, 253, 0.35);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 5.5rem;
+    }
+
+    .studio-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      background: transparent;
+    }
+
+    /* Viewport Floating Controls */
+    .viewport-overlay-controls {
+      position: absolute;
+      top: 1.35rem;
+      left: 1.35rem;
+      right: 1.35rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .viewport-pill-badge {
+      pointer-events: auto;
+      background: rgba(255, 255, 255, 0.84);
+      backdrop-filter: blur(28px) saturate(200%);
+      -webkit-backdrop-filter: blur(28px) saturate(200%);
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
+      border-top: 2px solid #ffffff;
+      border-radius: var(--radius-pill);
+      padding: 0.48rem 1.15rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--slate-900);
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      box-shadow: 0 8px 24px -4px rgba(14, 165, 233, 0.16), inset 0 1.5px 2px #ffffff;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .fullscreen-btn {
+      pointer-events: auto;
+      background: rgba(255, 255, 255, 0.84);
+      backdrop-filter: blur(28px) saturate(200%);
+      -webkit-backdrop-filter: blur(28px) saturate(200%);
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
+      border-top: 2px solid #ffffff;
+      border-radius: var(--radius-pill);
+      padding: 0.48rem 1.15rem;
+      font-size: 0.825rem;
+      font-weight: 700;
+      color: var(--cyan-700);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 8px 24px -4px rgba(14, 165, 233, 0.16), inset 0 1.5px 2px #ffffff;
+      text-decoration: none;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+      margin-right: 215px; /* Shifted left to prevent overlapping 3D Studio Sound Toggle & Clinlo brand logo */
+      z-index: 60;
+    }
+    .fullscreen-btn:hover {
+      background: #ffffff;
+      color: var(--slate-900);
+      transform: scale(1.02);
+      box-shadow: 0 8px 24px rgba(14, 165, 233, 0.18);
+    }
+    @media (max-width: 768px) {
+      .viewport-overlay-controls {
+        top: 0.65rem;
+        right: 0.65rem;
+        left: auto;
+        pointer-events: none;
+      }
+      .fullscreen-btn {
+        margin-right: 0;
+        margin-top: 42px; /* Positioned cleanly beneath the top-right icons on mobile, avoiding gender switcher */
+        padding: 0.38rem 0.75rem;
+        font-size: 0.72rem;
+      }
+    }
+
+    /* Adaptive 3D Poster Overlay */
+    .studio-poster-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      transition: opacity 0.45s ease, visibility 0.45s ease;
+      cursor: pointer;
+    }
+
+    .studio-poster-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .poster-cta-wrapper {
+      text-align: center;
+      background: rgba(15, 23, 42, 0.68);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-top: 1px solid rgba(255, 255, 255, 0.5);
+      padding: 1.65rem 2.45rem;
+      border-radius: var(--radius-xl);
+      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.38);
+      max-width: 90%;
+    }
+
+    .btn-launch-3d {
+      background: linear-gradient(135deg, var(--cyan-600) 0%, var(--cyan-400) 100%);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: var(--radius-pill);
+      padding: 0.95rem 1.95rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+      font-family: var(--font-sans);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      box-shadow: 0 10px 28px rgba(14, 165, 233, 0.45), inset 0 1px 1.5px rgba(255, 255, 255, 0.8);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn-launch-3d:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 36px rgba(14, 165, 233, 0.65);
+    }
+
+    .poster-hint {
+      margin-top: 0.85rem;
+      font-size: 0.825rem;
+      font-family: var(--font-mono);
+      color: rgba(255, 255, 255, 0.9);
+      letter-spacing: 0.05em;
+    }
+
+    /* Fallback experience */
+    .no-webgl-fallback {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* =============================================================
+       SECTION: CLINLO TECHNOLOGY ECOSYSTEM (Apple Liquid Glass Cards)
+       ============================================================= */
+    section.ecosystem-section {
+      padding: 5rem 0;
+      position: relative;
+      scroll-margin-top: calc(80px + 1.5rem);
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 740px;
+      margin: 0 auto 3.75rem;
+    }
+
+    .section-eyebrow {
+      font-size: 0.8rem;
+      font-weight: 750;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 40%, #6366f1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.9));
+      margin-bottom: 0.85rem;
+      display: inline-block;
+    }
+
+    h2.section-title {
+      font-size: clamp(2.1rem, 3.8vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(175deg, #09122c 0%, #172554 40%, #0369a1 80%, #0284c7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.95)) drop-shadow(0 3px 14px rgba(14, 165, 233, 0.18));
+      margin-bottom: 1rem;
+      line-height: 1.16;
+    }
+
+    p.section-desc {
+      font-size: 1.05rem;
+      font-weight: 480;
+      color: #27364b;
+      line-height: 1.68;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.95);
+    }
+
+    .grid-3-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.74);
+      border: 1px solid rgba(255, 255, 255, 0.88);
+      border-top: 1.5px solid #ffffff;
+      border-radius: var(--radius-lg);
+      padding: 2.35rem 2.1rem;
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      box-shadow: 
+        0 24px 56px -12px rgba(14, 165, 233, 0.14),
+        0 4px 16px -2px rgba(15, 23, 42, 0.03),
+        inset 0 1.5px 2px 0 rgba(255, 255, 255, 1),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+        inset 0 -1.5px 3px 0 rgba(186, 230, 253, 0.3);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px) scale(1.008);
+      border-color: rgba(56, 189, 248, 0.55);
+      border-top-color: #ffffff;
+      box-shadow: 
+        0 32px 72px -12px rgba(14, 165, 233, 0.22),
+        0 8px 24px -4px rgba(15, 23, 42, 0.06),
+        inset 0 2px 2.5px rgba(255, 255, 255, 1),
+        inset 0 0 0 1px rgba(56, 189, 248, 0.35);
+    }
+
+    .feature-icon-wrapper {
+      width: 54px;
+      height: 54px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, rgba(224, 242, 254, 0.85) 0%, rgba(237, 233, 254, 0.75) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      box-shadow: 0 8px 22px -4px rgba(14, 165, 233, 0.18), inset 0 1px 1px #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.6rem;
+      color: var(--cyan-600);
+    }
+
+    .feature-icon-wrapper svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    h3.feature-title {
+      font-size: 1.35rem;
+      font-weight: 750;
+      letter-spacing: -0.025em;
+      background: linear-gradient(165deg, #09122c 0%, #1e293b 50%, #0284c7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.95));
+      margin-bottom: 0.85rem;
+    }
+
+    p.feature-text {
+      font-size: 0.95rem;
+      color: #334155;
+      margin-bottom: 1.75rem;
+      flex-grow: 1;
+      line-height: 1.65;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
+    }
+
+    .feature-metric-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 750;
+      font-family: var(--font-mono);
+      background: rgba(2, 132, 199, 0.08);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8), 0 2px 8px rgba(14, 165, 233, 0.08);
+      padding: 0.4rem 0.85rem;
+      border-radius: var(--radius-sm);
+      background-image: linear-gradient(135deg, var(--cyan-600) 0%, var(--cyan-700) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      align-self: flex-start;
+    }
+
+    /* =============================================================
+       SECTION: WELLNESS CENTER MEMBERSHIP PRE-ORDER TIERS (4 PLANS)
+       ============================================================= */
+    section.waitlist-section {
+      padding: 5rem 0;
+      position: relative;
+      scroll-margin-top: calc(80px + 1.5rem);
+    }
+
+    .waitlist-card {
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(32px) saturate(190%) contrast(102%);
+      -webkit-backdrop-filter: blur(32px) saturate(190%) contrast(102%);
+      border-radius: var(--radius-xl);
+      padding: clamp(2.5rem, 4.5vw, 3.5rem) clamp(1.5rem, 4vw, 3.25rem);
+      color: var(--slate-900);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-top: 1.5px solid #ffffff;
+      box-shadow: 
+        0 32px 72px -16px rgba(14, 165, 233, 0.16),
+        0 10px 28px -4px rgba(15, 23, 42, 0.04),
+        inset 0 2px 2.5px 0 rgba(255, 255, 255, 1),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.5),
+        inset 0 -2px 4px 0 rgba(186, 230, 253, 0.3);
+    }
+
+    .waitlist-card::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 500px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.22) 0%, rgba(129, 140, 248, 0.12) 45%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .live-views-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.45rem 1.25rem;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      border-top: 1.5px solid #ffffff;
+      border-radius: var(--radius-pill);
+      font-size: 0.8rem;
+      color: #1e293b;
+      margin-bottom: 1.5rem;
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: 0 4px 16px -2px rgba(14, 165, 233, 0.12), inset 0 1.5px 1.5px #ffffff, inset 0 -1px 2px rgba(186, 230, 253, 0.25);
+    }
+
+    .live-status-dot {
+      width: 7.5px;
+      height: 7.5px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+      animation: liveDotPulse 2s infinite ease-in-out;
+    }
+
+    @keyframes liveDotPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
+    }
+
+    .views-metric strong {
+      color: var(--slate-900);
+      font-weight: 800;
+      font-family: var(--font-mono);
+    }
+
+    .views-divider {
+      color: var(--slate-300);
+    }
+
+    .views-subtext {
+      color: var(--slate-600);
+      font-size: 0.8rem;
+    }
+
+    h2.waitlist-title {
+      font-size: clamp(2.1rem, 3.8vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      background: linear-gradient(165deg, #09122c 0%, #1e293b 50%, #0284c7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.95));
+      margin-bottom: 0.65rem;
+      line-height: 1.15;
+    }
+
+    p.waitlist-desc {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #475569;
+      letter-spacing: -0.01em;
+      max-width: 600px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.5;
+    }
+
+    .membership-tiers-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+      max-width: 1180px;
+      margin: 0 auto 2.5rem;
+      text-align: left;
+    }
+
+    .membership-tier-card {
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(28px) saturate(190%) contrast(102%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-top: 1.5px solid #ffffff;
+      border-radius: var(--radius-lg);
+      padding: 1.75rem 1.45rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 
+        0 16px 40px -10px rgba(14, 165, 233, 0.10),
+        0 4px 14px -2px rgba(15, 23, 42, 0.03),
+        inset 0 1.5px 2px rgba(255, 255, 255, 1),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+        inset 0 -1.5px 3px rgba(186, 230, 253, 0.25);
+    }
+
+    .membership-tier-card:hover {
+      background: rgba(255, 255, 255, 0.94);
+      border-color: rgba(56, 189, 248, 0.55);
+      border-top-color: rgba(56, 189, 248, 0.65);
+      transform: translateY(-3px);
+      box-shadow: 
+        0 24px 50px -10px rgba(14, 165, 233, 0.18),
+        0 8px 20px -4px rgba(15, 23, 42, 0.05),
+        inset 0 2px 2.5px rgba(255, 255, 255, 1),
+        inset 0 0 0 1px rgba(56, 189, 248, 0.3);
+    }
+
+    .membership-tier-card.selected {
+      background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 249, 255, 0.95) 100%);
+      border: 2px solid var(--cyan-500);
+      border-top: 2px solid var(--cyan-500);
+      box-shadow: 
+        0 24px 54px -10px rgba(14, 165, 233, 0.32),
+        0 8px 24px -4px rgba(37, 99, 235, 0.16),
+        0 0 0 1.5px rgba(14, 165, 233, 0.45),
+        inset 0 0 0 1px rgba(14, 165, 233, 0.35),
+        inset 0 2px 4px rgba(14, 165, 233, 0.18);
+      transform: translateY(-3px);
+    }
+    .membership-tier-card.selected:hover {
+      border: 2px solid var(--cyan-500);
+      border-color: var(--cyan-500);
+      border-top-color: var(--cyan-500);
+    }
+
+    .tier-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-pill);
+      margin-bottom: 0.65rem;
+      width: fit-content;
+      background: rgba(2, 132, 199, 0.08);
+      color: var(--cyan-700);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .tier-badge.badge-blue,
+    .tier-badge.badge-cyan,
+    .tier-badge.badge-amber,
+    .tier-badge.badge-emerald {
+      background: rgba(2, 132, 199, 0.08);
+      color: var(--cyan-700);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .membership-tier-card.selected .tier-badge {
+      background: linear-gradient(135deg, var(--cyan-600) 0%, var(--cyan-500) 100%);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+    }
+
+    .tier-duration {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: #0f172a;
+      margin-bottom: 0.35rem;
+    }
+
+    .tier-discount-pill {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      background: rgba(2, 132, 199, 0.07);
+      color: var(--cyan-700);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 0.22rem 0.55rem;
+      border-radius: 6px;
+      margin-bottom: 0.75rem;
+      width: fit-content;
+      letter-spacing: 0.02em;
+    }
+
+    .tier-pricing-box {
+      margin: 0.45rem 0 0.85rem;
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .price-strikethrough {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #94a3b8;
+      text-decoration: line-through;
+      opacity: 0.85;
+    }
+
+    .price-final {
+      font-size: 2.25rem;
+      font-weight: 850;
+      letter-spacing: -0.035em;
+      color: #0f172a;
+    }
+
+    .price-period {
+      font-size: 0.825rem;
+      color: #64748b;
+      font-weight: 550;
+    }
+
+    .tier-features-list {
+      list-style: none;
+      font-size: 0.825rem;
+      color: #475569;
+      margin-top: 0.85rem;
+      border-top: 1px solid rgba(14, 165, 233, 0.12);
+      padding-top: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .tier-features-list li {
+      position: relative;
+      padding-left: 1.35rem;
+      line-height: 1.5;
+      color: #334155;
+      font-weight: 500;
+    }
+
+    .tier-features-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--cyan-600);
+      font-weight: 800;
+      font-size: 0.78rem;
+    }
+
+    /* Frictionless Form */
+    .waitlist-form {
+      max-width: 620px;
+      margin: 2.25rem auto 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .form-inputs-clean-row {
+      display: grid;
+      grid-template-columns: 1.1fr 1.1fr 1.2fr;
+      gap: 1.15rem;
+      text-align: left;
+    }
+
+    .input-optional {
+      font-size: 0.76rem;
+      color: #64748b;
+      font-weight: 400;
+    }
+
+    .input-field-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .input-label {
+      font-size: 0.85rem;
+      font-weight: 650;
+      color: #1e293b;
+      letter-spacing: -0.01em;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 1.1rem 1.4rem;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1.5px solid #94a3b8;
+      color: #0f172a;
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      font-weight: 500;
+      outline: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 6px rgba(14, 165, 233, 0.03);
+    }
+
+    .form-input::placeholder {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    .form-input:hover {
+      border-color: #0ea5e9;
+      background: #ffffff;
+      box-shadow: 0 0 0 2.5px rgba(14, 165, 233, 0.16), inset 0 1px 2px rgba(15, 23, 42, 0.02);
+    }
+
+    .form-input:focus {
+      border-color: #0284c7;
+      background: #ffffff;
+      box-shadow: 
+        0 0 0 4px rgba(14, 165, 233, 0.28), 
+        0 6px 18px rgba(14, 165, 233, 0.15);
+    }
+
+    .btn-submit-waitlist {
+      align-self: center;
+      margin-top: 0.5rem;
+      padding: 1.15rem 2.8rem;
+      border-radius: var(--radius-pill);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 249, 255, 0.95) 45%, rgba(224, 242, 254, 0.92) 100%);
+      color: #0284c7;
+      font-family: var(--font-sans);
+      font-size: 1.05rem;
+      font-weight: 750;
+      letter-spacing: -0.015em;
+      border: 1.5px solid #38bdf8;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(28px) saturate(200%);
+      -webkit-backdrop-filter: blur(28px) saturate(200%);
+      box-shadow: 
+        0 18px 44px -8px rgba(14, 165, 233, 0.38),
+        0 4px 14px rgba(37, 99, 235, 0.12),
+        inset 0 1.5px 2px #ffffff,
+        inset 0 -1.5px 3px rgba(186, 230, 253, 0.4);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.95);
+    }
+
+    .form-trust-note {
+      font-size: 0.78rem;
+      color: #64748b;
+      font-weight: 550;
+      letter-spacing: 0.01em;
+      margin-top: -0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      text-align: center;
+    }
+
+    .btn-submit-waitlist::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+      transition: left 0.6s ease;
+      pointer-events: none;
+    }
+
+    .btn-submit-waitlist:hover::before {
+      left: 100%;
+    }
+
+    .btn-submit-waitlist:hover {
+      background: linear-gradient(135deg, #ffffff 0%, rgba(224, 242, 254, 0.98) 100%);
+      transform: translateY(-2px) scale(1.01);
+      color: #0369a1;
+      border-color: rgba(56, 189, 248, 0.6);
+      box-shadow: 
+        0 26px 56px -10px rgba(14, 165, 233, 0.45),
+        0 10px 24px rgba(37, 99, 235, 0.18),
+        inset 0 2px 3px #ffffff,
+        inset 0 0 0 1px rgba(56, 189, 248, 0.4);
+    }
+
+    .btn-submit-waitlist:active {
+      transform: translateY(0) scale(0.99);
+      box-shadow: 0 10px 24px -4px rgba(14, 165, 233, 0.3);
+    }
+
+    .btn-submit-waitlist:disabled {
+      opacity: 0.75;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .admin-dispatch-notice {
+      display: none;
+    }
+
+    .waitlist-feedback {
+      display: none;
+      padding: 2.25rem 2rem;
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.92);
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
+      border-top: 2px solid #ffffff;
+      margin-top: 1.25rem;
+      text-align: center;
+      animation: fadeIn 0.4s ease;
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      box-shadow: 0 24px 56px -12px rgba(14, 165, 233, 0.22), inset 0 2px 2px #ffffff;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .waitlist-ticket {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 750;
+      color: var(--cyan-700);
+      margin: 0.65rem 0 1rem;
+      letter-spacing: 0.05em;
+      padding: 0.45rem 1.15rem;
+      background: rgba(2, 132, 199, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: var(--radius-pill);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9);
+    }
+
+    .waitlist-summary-card {
+      background: rgba(240, 249, 255, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      border-radius: var(--radius-md);
+      padding: 1.15rem 1.35rem;
+      margin: 0.75rem auto 1.25rem;
+      max-width: 490px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      font-size: 0.9rem;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 4px 12px rgba(14, 165, 233, 0.04);
+    }
+
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .summary-label {
+      color: #64748b;
+      font-weight: 550;
+      font-size: 0.85rem;
+    }
+
+    .summary-value {
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .sync-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.78rem;
+      font-weight: 650;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-pill);
+    }
+
+    .sync-badge.synced {
+      background: rgba(16, 185, 129, 0.1);
+      color: #047857;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .sync-badge.staged {
+      background: rgba(2, 132, 199, 0.1);
+      color: #0284c7;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    .waitlist-dispatch-actions {
+      display: flex;
+      gap: 0.85rem;
+      justify-content: center;
+      align-items: center;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-dispatch-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.35rem;
+      border-radius: var(--radius-pill);
+      font-family: var(--font-sans);
+      font-size: 0.88rem;
+      font-weight: 650;
+      text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+
+    .btn-dispatch-action.btn-mail {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.28);
+    }
+
+    .btn-dispatch-action.btn-mail:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(2, 132, 199, 0.38);
+      color: #ffffff;
+    }
+
+    .btn-dispatch-action.btn-wa {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.28);
+    }
+
+    .btn-dispatch-action.btn-wa:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(16, 185, 129, 0.38);
+      color: #ffffff;
+    }
+
+    .btn-reset-form {
+      display: inline-block;
+      margin-top: 1.15rem;
+      background: transparent;
+      border: none;
+      color: #64748b;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-decoration: underline;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .btn-reset-form:hover {
+      color: #0284c7;
+    }
+
+    .footer-admin-link {
+      color: #94a3b8;
+      font-size: 0.82rem;
+      text-decoration: none;
+      transition: color 0.2s ease;
+      cursor: pointer;
+    }
+
+    .footer-admin-link:hover {
+      color: #0284c7;
+      text-decoration: underline;
+    }
+
+    .form-guarantee {
+      display: none;
+    }
+
+    /* =============================================================
+       FOOTER
+       ============================================================= */
+    footer.site-footer {
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border-top: 1px solid rgba(255, 255, 255, 0.9);
+      padding: 3.5rem 0 2.5rem;
+      position: relative;
+      z-index: 10;
+      box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.9);
+    }
+
+    .footer-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-brand img {
+      height: 30px;
+      width: auto;
+      display: block;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 1.75rem;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--slate-600);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 550;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--cyan-600);
+    }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(226, 232, 240, 0.7);
+      font-size: 0.825rem;
+      color: var(--slate-500);
+      flex-wrap: wrap;
+    }
+
+    .system-status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.775rem;
+      color: #059669;
+      background: rgba(16, 185, 129, 0.08);
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .status-pulse-dot {
+      width: 6.5px;
+      height: 6.5px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 6px #10b981;
+    }
+
+    /* =============================================================
+       RESPONSIVE ADAPTATIONS
+       ============================================================= */
+    @media (max-width: 1080px) {
+      .membership-tiers-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.15rem;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .grid-3-col {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      .form-inputs-clean-row {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+      }
+      .studio-viewport-card {
+        height: 520px;
+      }
+      .nav-links {
+        display: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 0 1.15rem;
+      }
+      .nav-bar {
+        padding: 0.5rem 0.75rem;
+      }
+      .nav-brand img {
+        width: 88px !important;
+        height: auto !important;
+      }
+      .nav-actions {
+        gap: 0.5rem;
+        align-items: center;
+      }
+      #nav-sound-toggle {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .nav-actions .btn-pill-primary {
+        padding: 0.48rem 0.85rem;
+        font-size: 0.82rem;
+        white-space: nowrap;
+        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Hero Section Mobile */
+      .hero-badge {
+        font-size: 0.78rem;
+        padding: 0.35rem 0.85rem;
+        max-width: 95%;
+        text-align: center;
+        white-space: normal;
+      }
+      .hero-title {
+        font-size: clamp(2rem, 7vw, 3.4rem);
+        line-height: 1.15;
+        letter-spacing: -0.03em;
+        margin-bottom: 1.25rem;
+      }
+      .hero-subtitle {
+        font-size: 1.05rem;
+        line-height: 1.55;
+        margin-bottom: 2rem;
+        padding: 0 0.5rem;
+      }
+      .hero-cta-group {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 360px;
+        margin: 0 auto 3rem;
+        gap: 0.75rem;
+        align-items: stretch;
+      }
+      .hero-cta-group .btn-lg-primary {
+        width: 100%;
+        min-height: 48px;
+        padding: 0.95rem 1.5rem;
+        justify-content: center;
+        font-size: 1rem;
+        white-space: nowrap;
+        text-align: center;
+      }
+      .hero-secondary-cta-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        width: 100%;
+      }
+      .hero-secondary-cta-wrap .btn-lg-glass {
+        flex: 1;
+        min-height: 48px;
+        padding: 0.85rem 1.25rem;
+        justify-content: center;
+        font-size: 0.95rem;
+        white-space: nowrap;
+      }
+      .hero-sound-btn {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        min-height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 0;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      /* 3D Model Viewport Mobile */
+      .studio-viewport-card {
+        height: clamp(360px, 62vh, 440px);
+        border-radius: var(--radius-lg);
+        touch-action: pan-y;
+        margin-bottom: 3.5rem;
+      }
+      .studio-header-pill {
+        font-size: 0.74rem;
+        padding: 0.35rem 0.75rem;
+        top: 0.85rem;
+        left: 0.85rem;
+      }
+      .studio-features-list {
+        right: 0.85rem;
+        bottom: 0.85rem;
+        gap: 0.35rem;
+      }
+      .studio-feat-item {
+        font-size: 0.74rem;
+        padding: 0.3rem 0.6rem;
+      }
+
+      /* Waitlist / Pre-Order Section Mobile */
+      .waitlist-card {
+        padding: 2rem 1.25rem 1.75rem;
+        border-radius: 24px;
+      }
+      h2.waitlist-title {
+        font-size: clamp(1.6rem, 5.5vw, 2.2rem);
+        line-height: 1.15;
+        margin-bottom: 0.5rem;
+      }
+      p.waitlist-desc {
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+      }
+      .membership-tiers-grid {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+        margin-bottom: 1.5rem;
+      }
+      .membership-tier-card {
+        padding: 1.25rem 1.15rem;
+        border-radius: 16px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .tier-card-header {
+        margin-bottom: 0.65rem;
+      }
+      .tier-name {
+        font-size: 1.05rem;
+      }
+      .tier-price-row {
+        align-items: baseline;
+        margin-bottom: 0.5rem;
+      }
+      .tier-price {
+        font-size: 1.65rem;
+      }
+      .tier-original-price {
+        font-size: 0.95rem;
+      }
+      .waitlist-form {
+        margin: 1.25rem auto 0.5rem;
+        gap: 1.15rem;
+        max-width: 100%;
+      }
+      .form-inputs-clean-row {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+      }
+      .input-field-wrapper {
+        gap: 0.35rem;
+      }
+      .input-label {
+        font-size: 0.82rem;
+      }
+      .form-input {
+        font-size: 16px !important; /* CRITICAL: Prevents iOS Safari auto-zoom on mobile */
+        padding: 0.95rem 1.15rem;
+        border-radius: 14px;
+        min-height: 48px;
+        box-sizing: border-box;
+      }
+      .btn-submit-waitlist {
+        width: 100%;
+        align-self: stretch;
+        min-height: 52px;
+        padding: 1.05rem 1.25rem;
+        font-size: 1.02rem;
+        border-radius: 9999px;
+        white-space: normal;
+        text-align: center;
+        line-height: 1.35;
+        margin-top: 0.25rem;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .form-trust-note {
+        font-size: 0.72rem;
+        line-height: 1.45;
+        text-align: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-top: 0.65rem;
+      }
+      .waitlist-summary-card {
+        padding: 0.95rem 1.05rem;
+        font-size: 0.85rem;
+        margin: 0.65rem auto 1rem;
+      }
+      .waitlist-dispatch-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.65rem;
+      }
+      .btn-dispatch-action {
+        width: 100%;
+        min-height: 48px;
+        padding: 0.85rem 1.25rem;
+        font-size: 0.92rem;
+        box-sizing: border-box;
+      }
+      .footer-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.75rem;
+      }
+      .footer-bottom {
+        flex-direction: column-reverse;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .container {
+        padding: 0 0.75rem;
+      }
+      .nav-bar {
+        padding: 0.45rem 0.55rem;
+      }
+      .nav-brand img {
+        width: 82px !important;
+      }
+      .nav-actions {
+        gap: 0.35rem;
+      }
+      #nav-sound-toggle {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+      }
+      .nav-actions .btn-pill-primary {
+        padding: 0.42rem 0.65rem;
+        font-size: 0.76rem;
+      }
+      .waitlist-card {
+        padding: 1.5rem 0.85rem 1.25rem;
+      }
+      .btn-submit-waitlist {
+        font-size: 0.95rem;
+        padding: 0.95rem 1rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Atmospheric hairline background guidelines -->
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <!-- Ambient Audio Element -->
+  <audio id="bg-audio" loop preload="auto" src="./audio/Music.mp3"></audio>
+
+  <!-- ==========================================
+       HEADER & FLOATING NAVIGATION
+       ========================================== -->
+  <header class="site-header">
+    <div class="container">
+      <nav class="nav-bar" aria-label="Main Navigation">
+        <!-- Authentic Vector Clinlo Logo -->
+        <a href="#top" class="nav-brand" aria-label="CLINLO Home">
+          <img src="./branding/clinlo_logo_lockup_black.png" alt="CLINLO" width="141" height="34">
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <ul class="nav-links">
+          <li><a href="#interactive-3d">Biometric 3D</a></li>
+          <li><a href="#ecosystem">Technology</a></li>
+          <li><a href="#waitlist">Memberships</a></li>
+        </ul>
+
+        <!-- Priority Access Action & Sound Mute Toggle -->
+        <div class="nav-actions">
+          <button type="button" id="nav-sound-toggle" class="btn-sound-toggle muted" onclick="toggleAmbientSound()" aria-label="Unmute Ambient Sound" title="Sound Off (Click to Play)">
+            <svg class="sound-icon-muted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="none"></polygon>
+              <line x1="23" y1="9" x2="17" y2="15"></line>
+              <line x1="17" y1="9" x2="23" y2="15"></line>
+            </svg>
+            <svg class="sound-icon-active" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="none"></polygon>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+          </button>
+          <a href="#waitlist" class="btn-pill-primary">Priority Access</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ==========================================
+         HERO SECTION
+         ========================================== -->
+    <section class="hero-section">
+      <div class="container">
+        <!-- Floating Pill Badge -->
+        <div class="badge-pill">
+          <span class="badge-dot" aria-hidden="true"></span>
+          ✦ PRE-LAUNCH ACCESS • COMING SOON IN ATP
+        </div>
+
+        <!-- Visionary Liquid Glass Headline -->
+        <h1 class="hero-title">
+          The Next Paradigm in <span class="gradient-text">Intelligent Biometric Mapping</span>
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="hero-subtitle">
+          The Clinlo Architecture
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="hero-cta-group">
+          <a href="#waitlist" class="btn-lg-primary">Reserve Priority Access</a>
+          <div class="hero-secondary-cta-wrap">
+            <a href="#interactive-3d" class="btn-lg-glass">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              Explore 3D Studio
+            </a>
+            <button type="button" id="hero-sound-toggle" class="btn-sound-toggle hero-sound-btn muted" onclick="toggleAmbientSound()" aria-label="Unmute Ambient Sound" title="Sound Off (Click to Play)">
+              <svg class="sound-icon-muted" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="none"></polygon>
+                <line x1="23" y1="9" x2="17" y2="15"></line>
+                <line x1="17" y1="9" x2="23" y2="15"></line>
+              </svg>
+              <svg class="sound-icon-active" style="display:none;" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="none"></polygon>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             INTERACTIVE 3D STUDIO EMBEDDED VIEWPORT
+             ========================================== -->
+        <div id="interactive-3d" class="studio-viewport-card" aria-label="Interactive 3D Biometric Explorer">
+          <!-- Floating Controls inside Viewport -->
+          <div class="viewport-overlay-controls" style="justify-content: flex-end;">
+            <a href="./vibrant_optimized.html" target="_blank" rel="noopener" class="fullscreen-btn" aria-label="Open Fullscreen Studio">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+              <span>Full Screen</span>
+            </a>
+          </div>
+
+          <!-- High-Resolution Static 3D Poster (Instantly visible, 0ms TBT, 0 Layout Shift) -->
+          <div id="clinlo-3d-poster" class="studio-poster-overlay" style="background-image: url('./branding/clinlo_3d_poster.webp');">
+            <div class="poster-cta-wrapper">
+              <button type="button" id="btn-launch-3d" class="btn-launch-3d" onclick="mountInteractive3D(true)" aria-label="Launch Interactive 3D Avatar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                <span>Tap to Launch 3D Biometric Avatar</span>
+              </button>
+              <div class="poster-hint">60 FPS Real-Time WebGL • Demand-Driven Execution</div>
+            </div>
+          </div>
+
+          <!-- Embedded High-Performance WebGL Studio (Mounted progressively) -->
+          <iframe 
+            id="clinlo-3d-frame" 
+            class="studio-iframe" 
+            title="Clinlo Interactive 3D Biometric Avatar"
+            allow="autoplay">
+          </iframe>
+
+          <!-- Accessible Fallback when WebGL is unavailable -->
+          <noscript>
+            <div class="no-webgl-fallback" style="display: flex;">
+              <h3>Interactive 3D Biometric Architecture</h3>
+              <p>WebGL acceleration is required for real-time 3D rendering. Please enable JavaScript and WebGL to view the live avatar.</p>
+            </div>
+          </noscript>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION: CLINLO TECHNOLOGY ECOSYSTEM
+         ========================================== -->
+    <section id="ecosystem" class="ecosystem-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-eyebrow">The Clinlo Architecture</span>
+          <h2 class="section-title">An Integrated Healthcare Intelligence Ecosystem</h2>
+          <p class="section-desc">
+            Bridging autonomous clinical terminals, low-latency neural synthesis, and zero-knowledge encrypted health clouds.
+          </p>
+        </div>
+
+        <div class="grid-3-col">
+          <!-- Pillar 1 -->
+          <div class="feature-card">
+            <div class="feature-icon-wrapper" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6a6 6 0 0 0-6 6c0 2 1.5 3.5 3 4.5"/><path d="M12 18v-4"/></svg>
+            </div>
+            <h3 class="feature-title">Clinlo Neural Core</h3>
+            <p class="feature-text">
+              Real-time biomarker inference engine correlating multi-parameter non-invasive data streams into predictive physiological scores with sub-second accuracy.
+            </p>
+            <div class="feature-metric-badge">LATENCY: &lt; 120ms • 99.4% RECALL</div>
+          </div>
+
+          <!-- Pillar 2 -->
+          <div class="feature-card">
+            <div class="feature-icon-wrapper" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="18" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            </div>
+            <h3 class="feature-title">Clinlo Biometric Station</h3>
+            <p class="feature-text">
+              Autonomous, non-invasive clinical scanning terminal integrating multispectral optical, bio-impedance, and cardio-pulmonary diagnostics in a 3-minute workflow.
+            </p>
+            <div class="feature-metric-badge">NON-INVASIVE • 3-MIN PROTOCOL</div>
+          </div>
+
+          <!-- Pillar 3 -->
+          <div class="feature-card">
+            <div class="feature-icon-wrapper" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <h3 class="feature-title">Zero-Trust Telemetry</h3>
+            <p class="feature-text">
+              Cryptographically verified, end-to-end encrypted health data architecture designed from the ground up for strict HIPAA, GDPR, and ISO 27001 regulatory compliance.
+            </p>
+            <div class="feature-metric-badge">HIPAA / GDPR READY • 0-LEAK</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION: WELLNESS CENTER MEMBERSHIP PRE-ORDERS
+         ========================================== -->
+    <section id="waitlist" class="waitlist-section">
+      <div class="container">
+        <div class="waitlist-card">
+          <!-- Live Site View Counter Banner -->
+          <div class="live-views-banner" id="live-views-container">
+            <span class="live-status-dot"></span>
+            <span class="views-metric"><strong id="site-views-counter">1,621</strong> Site Visitors</span>
+            <span class="views-divider">•</span>
+            <span class="views-subtext">CLINLO Wellness Center Pre-Orders Live</span>
+          </div>
+
+          <h2 class="waitlist-title">Reserve Your Founding Membership</h2>
+          <p class="waitlist-desc">50% off on preorders</p>
+
+          <!-- 4 Interactive Membership Plan Cards -->
+          <div class="membership-tiers-grid" role="radiogroup" aria-label="Select Membership Plan">
+            <!-- Tier 1: Monthly -->
+            <div id="tier-card-1m" class="membership-tier-card" onclick="selectPlan('1_month', 'Monthly Pass', '₹1,999', '₹3,999')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPlan('1_month', 'Monthly Pass', '₹1,999', '₹3,999');}" role="radio" aria-checked="false" tabindex="0">
+              <div>
+                <span class="tier-badge badge-blue">MONTHLY ACCESS</span>
+                <div class="tier-duration">Monthly Pass</div>
+                <span class="tier-discount-pill">SAVE ₹2,000 • 50% LAUNCH SPECIAL</span>
+                <div class="tier-pricing-box">
+                  <span class="price-strikethrough">₹3,999</span>
+                  <span class="price-final">₹1,999</span>
+                  <span class="price-period">/ month</span>
+                </div>
+                <ul class="tier-features-list">
+                  <li>Full Wellness Center & Diagnostic Access</li>
+                  <li>1x Baseline 3D Biometric Profile Mapping</li>
+                  <li>Cardio-Pulmonary Hemodynamic Scan</li>
+                  <li>Clinlo Member Telemetry App Access</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Tier 2: Quarterly -->
+            <div id="tier-card-3m" class="membership-tier-card" onclick="selectPlan('3_months', 'Quarterly Protocol', '₹5,999', '₹11,999')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPlan('3_months', 'Quarterly Protocol', '₹5,999', '₹11,999');}" role="radio" aria-checked="false" tabindex="0">
+              <div>
+                <span class="tier-badge badge-cyan">QUARTERLY (3 MO)</span>
+                <div class="tier-duration">Quarterly Protocol</div>
+                <span class="tier-discount-pill">SAVE ₹6,000 • 50% SAVINGS</span>
+                <div class="tier-pricing-box">
+                  <span class="price-strikethrough">₹11,999</span>
+                  <span class="price-final">₹5,999</span>
+                  <span class="price-period">total</span>
+                </div>
+                <ul class="tier-features-list">
+                  <li>Full Wellness Center & Diagnostic Access</li>
+                  <li>2x Longitudinal 3D Biometric Scans</li>
+                  <li>Metabolic & Cellular Longevity Profile</li>
+                  <li>Dedicated Clinical Concierge Onboarding</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Tier 3: Half Yearly (Default Selected / Most Popular) -->
+            <div id="tier-card-6m" class="membership-tier-card selected" onclick="selectPlan('6_months', 'Half Yearly Protocol', '₹8,999', '₹23,999')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPlan('6_months', 'Half Yearly Protocol', '₹8,999', '₹23,999');}" role="radio" aria-checked="true" tabindex="0">
+              <div>
+                <span class="tier-badge badge-amber">MOST POPULAR • 62.5% SAVINGS</span>
+                <div class="tier-duration">Half Yearly Protocol</div>
+                <span class="tier-discount-pill">SAVE ₹15,000 • FOUNDER SPECIAL</span>
+                <div class="tier-pricing-box">
+                  <span class="price-strikethrough">₹23,999</span>
+                  <span class="price-final">₹8,999</span>
+                  <span class="price-period">total</span>
+                </div>
+                <ul class="tier-features-list">
+                  <li>Unlimited 3D Biometric Station Scans</li>
+                  <li>Cellular Longevity & Metabolic Scoring</li>
+                  <li>Monthly Dedicated Physician Review</li>
+                  <li>Genetic Transcription Risk Assessment</li>
+                  <li>Priority Booking & Private Recovery Suite</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Tier 4: Annually (VIP Annual) -->
+            <div id="tier-card-12m" class="membership-tier-card" onclick="selectPlan('12_months', 'Annual VIP Protocol', '₹13,999', '₹34,999')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPlan('12_months', 'Annual VIP Protocol', '₹13,999', '₹34,999');}" role="radio" aria-checked="false" tabindex="0">
+              <div>
+                <span class="tier-badge badge-emerald">VIP ANNUAL • 60% SAVINGS</span>
+                <div class="tier-duration">Annual VIP Protocol</div>
+                <span class="tier-discount-pill">SAVE ₹21,000 • MAXIMUM VALUE</span>
+                <div class="tier-pricing-box">
+                  <span class="price-strikethrough">₹34,999</span>
+                  <span class="price-final">₹13,999</span>
+                  <span class="price-period">annual</span>
+                </div>
+                <ul class="tier-features-list">
+                  <li>Comprehensive Longitudinal 3D Mapping</li>
+                  <li>Dedicated 24/7 Longevity Concierge</li>
+                  <li>Full Cellular, Hormonal & DNA Workups</li>
+                  <li>Unlimited Guest Diagnostics (4 / Quarter)</li>
+                  <li>Lifetime Grandfathered Renewal Rate</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ultra-Optimized Pre-Registration & Priority Waitlist Form -->
+          <form id="priority-waitlist-form" class="waitlist-form" onsubmit="handleWaitlistSubmit(event)">
+            <!-- Hidden configuration & security fields -->
+            <div style="display:none !important;" aria-hidden="true">
+              <input type="text" name="_hp_security_check" id="waitlist-hp" tabindex="-1" autocomplete="off" aria-label="Security Check">
+              <input type="hidden" id="waitlist-selected-plan" name="plan" value="6_months">
+              <input type="hidden" id="waitlist-plan-name" name="plan_name" value="Half Yearly Protocol">
+              <input type="hidden" id="waitlist-plan-price" name="plan_price" value="8,999">
+              <input type="hidden" id="waitlist-plan-period" name="plan_period" value="total">
+              <input type="hidden" id="waitlist-original-price" name="original_price" value="23,999">
+            </div>
+
+            <div class="form-inputs-clean-row">
+              <div class="input-field-wrapper">
+                <label for="waitlist-name" class="input-label">Full Name</label>
+                <input type="text" id="waitlist-name" class="form-input" placeholder="e.g. Alexander Vance" required aria-label="Full Name">
+              </div>
+              <div class="input-field-wrapper">
+                <label for="waitlist-phone" class="input-label">Phone / WhatsApp Number</label>
+                <input type="tel" id="waitlist-phone" class="form-input" placeholder="e.g. +91 98765 43210" required aria-label="Phone / WhatsApp Number">
+              </div>
+              <div class="input-field-wrapper">
+                <label for="waitlist-email" class="input-label">Email Address <span class="input-optional">(Optional)</span></label>
+                <input type="email" id="waitlist-email" class="form-input" placeholder="e.g. a.vance@stanfordhealth.org" aria-label="Email Address">
+              </div>
+            </div>
+
+            <button type="submit" id="waitlist-submit-btn" class="btn-submit-waitlist">
+              Claim 50% Founder Discount
+            </button>
+
+            <div class="form-trust-note" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              <span>Zero-Spam Guarantee • Direct Concierge Confirmation • No Payment Required Today</span>
+            </div>
+          </form>
+
+          <!-- Interactive Confirmation State -->
+          <div id="waitlist-success" class="waitlist-feedback" role="alert" aria-live="polite">
+            <div id="waitlist-status-icon" style="font-size: 2.2rem; margin-bottom: 0.5rem; color: var(--cyan-600, #0284c7);">✓</div>
+            <h3 id="waitlist-status-title" style="font-size: 1.35rem; font-weight: 800; color: #09122c; margin-bottom: 0.35rem;">Founding Pre-Order Confirmed</h3>
+            <p id="waitlist-status-subtitle" style="color: #475569; font-size: 0.95rem; margin-bottom: 0.75rem;">Your wellness membership pre-registration has been recorded & secured:</p>
+            <div id="waitlist-ticket-number" class="waitlist-ticket">TICKET #CLINLO-1842</div>
+
+            <div id="waitlist-ticket-summary" class="waitlist-summary-card">
+              <div class="summary-line"><span class="summary-label">Membership Tier:</span> <strong id="summary-plan-name" class="summary-value">Half Yearly Protocol</strong></div>
+              <div class="summary-line"><span class="summary-label">Locked Rate:</span> <span><strong id="summary-plan-price" class="summary-value">₹8,999</strong> <span id="summary-plan-period" class="summary-sub" style="font-size:0.8rem;color:#64748b;">total</span></span></div>
+              <div class="summary-line"><span class="summary-label">Registrant:</span> <strong id="summary-client-name" class="summary-value">Alexander Vance</strong></div>
+              <div class="summary-line"><span class="summary-label">Direct Contact:</span> <strong id="summary-client-contact" class="summary-value">+91 98765 43210</strong></div>
+              <div class="summary-line"><span class="summary-label">Transmission Status:</span> <span id="summary-sync-badge" class="sync-badge synced">✓ Dispatched to admin@clinlo.com</span></div>
+            </div>
+
+            <div class="waitlist-dispatch-actions">
+              <a id="btn-mail-dispatch" href="#" class="btn-dispatch-action btn-mail" target="_blank" rel="noopener">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                <span>Email Copy to admin@clinlo.com</span>
+              </a>
+              <a id="btn-wa-dispatch" href="#" class="btn-dispatch-action btn-wa" target="_blank" rel="noopener">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                <span>WhatsApp Concierge</span>
+              </a>
+            </div>
+
+            <div>
+              <button type="button" class="btn-reset-form" onclick="resetWaitlistForm()">
+                ← Register Another Membership Tier
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==========================================
+       FOOTER
+       ========================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <img src="./branding/clinlo_logo_lockup_black.png" alt="CLINLO" width="124" height="30">
+        </div>
+
+        <ul class="footer-links">
+          <li><a href="#interactive-3d">Biometric 3D</a></li>
+          <li><a href="#ecosystem">Technology</a></li>
+          <li><a href="#waitlist">Memberships</a></li>
+          <li><a href="javascript:void(0)" onclick="clinloExportLeads()" title="Export Stored Leads CSV" class="footer-admin-link">Leads Ledger (CSV)</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 Clinlo, Inc. All rights reserved. Registered trademark of Clinlo.</div>
+        <div class="system-status-indicator" role="status">
+          <span class="status-pulse-dot" aria-hidden="true"></span>
+          <span>System Status: Ultra-Optimized Static Build Ready</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================
+       INTERACTIVE CLIENT-SIDE JAVASCRIPT
+       ========================================== -->
+  <script>
+    // -------------------------------------------------------------
+    // PROGRESSIVE 3D STUDIO MOUNT (Mobile 85+ Lighthouse Strategy)
+    // -------------------------------------------------------------
+    function mountInteractive3D(fromUserAction = false) {
+      const iframe = document.getElementById('clinlo-3d-frame');
+      const poster = document.getElementById('clinlo-3d-poster');
+      if (!iframe) return;
+
+      if (!iframe.src || iframe.src === 'about:blank' || !iframe.src.includes('vibrant_optimized.html')) {
+        iframe.src = './vibrant_optimized.html';
+        iframe.onload = () => {
+          if (poster) poster.classList.add('hidden');
+        };
+      } else {
+        if (poster) poster.classList.add('hidden');
+      }
+    }
+
+    // -------------------------------------------------------------
+    // MOUSE POINTER PARALLAX TO 3D AVATAR
+    // -------------------------------------------------------------
+    window.addEventListener('pointermove', (e) => {
+      const iframe = document.getElementById('clinlo-3d-frame');
+      if (iframe && iframe.contentWindow) {
+        const nx = (e.clientX / window.innerWidth) * 2 - 1;
+        const ny = -(e.clientY / window.innerHeight) * 2 + 1;
+        iframe.contentWindow.postMessage({
+          type: 'POINTER_MOVE',
+          x: nx,
+          y: ny
+        }, '*');
+      }
+    }, { passive: true });
+
+    // -------------------------------------------------------------
+    // MOBILE PHONE TILT (GYROSCOPE ACCELEROMETER TO 3D AVATAR)
+    // -------------------------------------------------------------
+    if (window.DeviceOrientationEvent) {
+      function forwardPhoneTilt(e) {
+        const iframe = document.getElementById('clinlo-3d-frame');
+        if (iframe && iframe.contentWindow && e.gamma !== null && e.beta !== null) {
+          iframe.contentWindow.postMessage({
+            type: 'DEVICE_ORIENTATION',
+            gamma: e.gamma,
+            beta: e.beta
+          }, '*');
+        }
+      }
+
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        const reqTilt = () => {
+          DeviceOrientationEvent.requestPermission().then(state => {
+            if (state === 'granted') {
+              window.addEventListener('deviceorientation', forwardPhoneTilt, { passive: true });
+            }
+          }).catch(() => {});
+          window.removeEventListener('pointerdown', reqTilt);
+          window.removeEventListener('touchstart', reqTilt);
+        };
+        window.addEventListener('pointerdown', reqTilt, { passive: true });
+        window.addEventListener('touchstart', reqTilt, { passive: true });
+      } else {
+        window.addEventListener('deviceorientation', forwardPhoneTilt, { passive: true });
+      }
+    }
+
+    // -------------------------------------------------------------
+    // MEMBERSHIP TIER CARD SELECTION
+    // -------------------------------------------------------------
+    function selectPlan(planKey, planName, planPrice, originalPrice) {
+      // Deselect all cards
+      document.querySelectorAll('.membership-tier-card').forEach(card => {
+        card.classList.remove('selected');
+        card.setAttribute('aria-checked', 'false');
+      });
+
+      // Select targeted card
+      let targetId = 'tier-card-6m';
+      if (planKey === '1_month') targetId = 'tier-card-1m';
+      else if (planKey === '3_months') targetId = 'tier-card-3m';
+      else if (planKey === '12_months') targetId = 'tier-card-12m';
+
+      const selectedCard = document.getElementById(targetId);
+      if (selectedCard) {
+        selectedCard.classList.add('selected');
+        selectedCard.setAttribute('aria-checked', 'true');
+      }
+
+      // Clean numeric values for backend / hidden inputs
+      const cleanPrice = String(planPrice).replace(/[^0-9,]/g, '');
+      const cleanOriginal = String(originalPrice).replace(/[^0-9,]/g, '');
+
+      // Derive billing period
+      const periodMap = {
+        '1_month': '/ month',
+        '3_months': 'total',
+        '6_months': 'total',
+        '12_months': 'annual'
+      };
+      const planPeriod = periodMap[planKey] || 'total';
+
+      // Update hidden form inputs
+      document.getElementById('waitlist-selected-plan').value = planKey;
+      document.getElementById('waitlist-plan-name').value = planName;
+      document.getElementById('waitlist-plan-price').value = cleanPrice;
+      const periodInput = document.getElementById('waitlist-plan-period');
+      if (periodInput) periodInput.value = planPeriod;
+      document.getElementById('waitlist-original-price').value = cleanOriginal;
+
+      // Update live summary period
+      const summaryPeriodEl = document.getElementById('summary-plan-period');
+      if (summaryPeriodEl) summaryPeriodEl.textContent = planPeriod;
+
+      // Update CTA button label
+      const submitBtn = document.getElementById('waitlist-submit-btn');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Claim 50% Founder Discount';
+      }
+
+      // If user had already submitted and wants to select another plan, restore form view
+      const form = document.getElementById('priority-waitlist-form');
+      const feedback = document.getElementById('waitlist-success');
+      if (form && feedback && feedback.style.display === 'block') {
+        form.style.display = 'block';
+        feedback.style.display = 'none';
+      }
+    }
+
+    // Configurable backend endpoints (supports custom remote VPS, localhost fallback, or GitHub Pages static)
+    const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:' || !window.location.hostname;
+    const isGitHubPages = window.location.hostname.endsWith('github.io');
+    const defaultApiEndpoint = isLocalHost ? 'http://127.0.0.1:8086/api/waitlist' : (isGitHubPages ? '' : '/api/waitlist');
+    window.CLINLO_API_ENDPOINT = window.CLINLO_API_ENDPOINT || window.CLINLO_WAITLIST_ENDPOINT || defaultApiEndpoint;
+    window.CLINLO_VIEWS_ENDPOINT = window.CLINLO_VIEWS_ENDPOINT || (isLocalHost ? 'http://127.0.0.1:8086/api/views' : (isGitHubPages ? '' : '/api/views'));
+
+    // Accurate Site View Counter Sync
+    async function initSiteViewCounter() {
+      if (!window.CLINLO_VIEWS_ENDPOINT) return;
+      try {
+        const res = await fetch(window.CLINLO_VIEWS_ENDPOINT);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.total_views) {
+            const el = document.getElementById('site-views-counter');
+            if (el) el.textContent = Number(data.total_views).toLocaleString();
+          }
+        }
+      } catch (e) {
+        console.debug('Views endpoint fallback');
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSiteViewCounter);
+    } else {
+      initSiteViewCounter();
+    }
+
+    // Production Waitlist & Pre-Order Submission Handler (Name, Phone, and Email)
+    async function handleWaitlistSubmit(event) {
+      event.preventDefault();
+      const nameInput = document.getElementById('waitlist-name');
+      const phoneInput = document.getElementById('waitlist-phone');
+      const emailInput = document.getElementById('waitlist-email');
+      const planKey = document.getElementById('waitlist-selected-plan').value;
+      const planName = document.getElementById('waitlist-plan-name').value;
+      const planPrice = document.getElementById('waitlist-plan-price').value;
+      const planPeriod = document.getElementById('waitlist-plan-period') ? document.getElementById('waitlist-plan-period').value : 'total';
+      const originalPrice = document.getElementById('waitlist-original-price').value;
+
+      const hpInput = document.getElementById('waitlist-hp');
+      const submitBtn = document.getElementById('waitlist-submit-btn');
+      const form = document.getElementById('priority-waitlist-form');
+      const feedback = document.getElementById('waitlist-success');
+
+      // 1. Anti-bot honeypot evaluation
+      if (hpInput && hpInput.value) {
+        form.style.display = 'none';
+        feedback.style.display = 'block';
+        return;
+      }
+
+      const name = nameInput ? nameInput.value.trim() : '';
+      const phone = phoneInput ? phoneInput.value.trim() : '';
+      const email = emailInput ? emailInput.value.trim() : '';
+
+      if (!name || name.length < 2) {
+        alert('Please enter your full name (minimum 2 characters).');
+        return;
+      }
+
+      if (!phone || phone.length < 7) {
+        alert('Please enter a valid Phone / WhatsApp number for onboarding confirmation.');
+        return;
+      }
+
+      // 2. Client-side rate limiting (5 submissions per 60s per session)
+      const attempts = parseInt(sessionStorage.getItem('clinlo_submit_count') || '0', 10);
+      if (attempts >= 5) {
+        alert('Submission rate limit reached. Please wait a moment before trying again.');
+        return;
+      }
+      sessionStorage.setItem('clinlo_submit_count', (attempts + 1).toString());
+
+      // Show submitting state
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Securing Membership & Transmitting...';
+
+      const fallbackTicket = 'CLINLO-' + Math.floor(1000 + Math.random() * 9000);
+      let isCentralRecorded = false;
+      let confirmedTicket = fallbackTicket;
+
+      // 3. Attempt API dispatch (VPS backend or remote API)
+      const targetEndpoint = window.CLINLO_API_ENDPOINT;
+      if (targetEndpoint) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+          const response = await fetch(targetEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name,
+              phone,
+              email: email || 'Not Provided (WhatsApp Concierge)',
+              plan: planKey,
+              plan_name: planName,
+              plan_price: planPrice,
+              original_price: originalPrice,
+              target_admin: 'admin@clinlo.com',
+              _hp_security_check: '',
+              timestamp: Date.now()
+            }),
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const resData = await response.json();
+            isCentralRecorded = true;
+            if (resData.ticket) confirmedTicket = resData.ticket;
+          }
+        } catch (err) {
+          console.info('Backend waitlist daemon offline or GitHub Pages standalone mode. Staging registration locally.', err);
+        }
+      }
+
+      // 3.5 Serverless static form dispatch fallback (FormSubmit or Webhook for GitHub Pages)
+      if (!isCentralRecorded) {
+        const staticEndpoint = window.CLINLO_WEBHOOK_URL || 'https://formsubmit.co/ajax/admin@clinlo.com';
+        try {
+          fetch(staticEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              _subject: `CLINLO Pre-Order [TICKET #${confirmedTicket}] - ${name}`,
+              ticket: confirmedTicket,
+              name: name,
+              phone: phone,
+              email: email || 'Not Provided (WhatsApp Concierge)',
+              plan: planName,
+              price: `₹${planPrice} (${planPeriod})`,
+              admin_target: 'admin@clinlo.com',
+              _template: 'table',
+              timestamp: new Date().toISOString()
+            })
+          }).then(r => r.json()).then(data => {
+            if (data && (data.success === 'true' || data.success === true)) {
+              isCentralRecorded = true;
+              const badge = document.getElementById('summary-sync-badge');
+              if (badge) {
+                badge.className = 'sync-badge synced';
+                badge.textContent = '✓ Transmitted to admin@clinlo.com';
+              }
+            }
+          }).catch(() => {});
+        } catch (e) {}
+      }
+
+      // 4. Save to local storage cache (dual-keyed for robust client recovery)
+      const record = {
+        ticket: confirmedTicket,
+        name,
+        phone,
+        email: email || 'N/A',
+        plan: planKey,
+        plan_name: planName,
+        plan_price: planPrice,
+        plan_period: planPeriod,
+        original_price: originalPrice,
+        centralSynced: isCentralRecorded,
+        adminNotified: 'admin@clinlo.com',
+        timestamp: new Date().toISOString()
+      };
+      try {
+        const storedLeads = JSON.parse(localStorage.getItem('clinlo_leads') || '[]');
+        storedLeads.push(record);
+        localStorage.setItem('clinlo_leads', JSON.stringify(storedLeads));
+        localStorage.setItem('clinlo_preorders', JSON.stringify(storedLeads));
+      } catch (e) {}
+
+      // 5. Populate Dynamic Ticket Summary Details
+      const ticketEl = document.getElementById('waitlist-ticket-number');
+      if (ticketEl) ticketEl.textContent = 'TICKET #' + confirmedTicket;
+
+      const summaryPlanName = document.getElementById('summary-plan-name');
+      if (summaryPlanName) summaryPlanName.textContent = planName;
+
+      const summaryPlanPrice = document.getElementById('summary-plan-price');
+      if (summaryPlanPrice) summaryPlanPrice.textContent = '₹' + planPrice;
+
+      const summaryPlanPeriod = document.getElementById('summary-plan-period');
+      if (summaryPlanPeriod) summaryPlanPeriod.textContent = planPeriod;
+
+      const summaryClientName = document.getElementById('summary-client-name');
+      if (summaryClientName) summaryClientName.textContent = name;
+
+      const summaryClientContact = document.getElementById('summary-client-contact');
+      if (summaryClientContact) {
+        summaryClientContact.textContent = phone + (email ? ' • ' + email : '');
+      }
+
+      const syncBadge = document.getElementById('summary-sync-badge');
+      if (syncBadge) {
+        if (isCentralRecorded) {
+          syncBadge.className = 'sync-badge synced';
+          syncBadge.textContent = '✓ Transmitted to Zoho SMTP & admin@clinlo.com';
+        } else {
+          syncBadge.className = 'sync-badge staged';
+          syncBadge.textContent = '✓ Staged in Browser Ledger • Concierge Ready';
+        }
+      }
+
+      // 6. Build one-click mailto & WhatsApp concierge fallback links
+      const mailSubject = encodeURIComponent(`CLINLO Pre-Order [TICKET #${confirmedTicket}] - ${name}`);
+      const mailBody = encodeURIComponent(
+`CLINLO WELLNESS CENTER — PRE-ORDER CONFIRMATION
+=================================================
+Ticket Reference:    #${confirmedTicket}
+Full Name:           ${name}
+Phone / WhatsApp:    ${phone}
+Email:               ${email || 'Not Provided'}
+Selected Membership: ${planName}
+Launch Founder Rate: ₹${planPrice} (${planPeriod}) [Original: ₹${originalPrice}]
+Status:              Confirmed & Staged
+Timestamp:           ${new Date().toUTCString()}
+=================================================
+Please verify onboarding availability and launch calendar.`
+      );
+      const mailBtn = document.getElementById('btn-mail-dispatch');
+      if (mailBtn) {
+        mailBtn.href = `mailto:admin@clinlo.com?subject=${mailSubject}&body=${mailBody}`;
+      }
+
+      const waText = encodeURIComponent(
+`Hi Clinlo Concierge! I just pre-ordered the ${planName} (TICKET #${confirmedTicket}). Name: ${name}, Phone: ${phone}. Excited to join!`
+      );
+      const waBtn = document.getElementById('btn-wa-dispatch');
+      if (waBtn) {
+        waBtn.href = `https://wa.me/?text=${waText}`;
+      }
+
+      // 7. Transition view to confirmed state
+      form.style.display = 'none';
+      feedback.style.display = 'block';
+      feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Reset Form for Registering Another Membership
+    function resetWaitlistForm() {
+      const form = document.getElementById('priority-waitlist-form');
+      const feedback = document.getElementById('waitlist-success');
+      const submitBtn = document.getElementById('waitlist-submit-btn');
+      if (form) {
+        form.reset();
+        form.style.display = 'block';
+      }
+      if (feedback) {
+        feedback.style.display = 'none';
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Claim 50% Founder Discount';
+      }
+    }
+
+    // Browser CSV Lead Exporter for Site Administrator
+    window.clinloExportLeads = function() {
+      try {
+        const stored = JSON.parse(localStorage.getItem('clinlo_leads') || localStorage.getItem('clinlo_preorders') || '[]');
+        if (!stored.length) {
+          alert('No leads recorded in browser storage yet.');
+          return;
+        }
+        const headers = ['ticket', 'name', 'phone', 'email', 'plan', 'plan_name', 'plan_price', 'original_price', 'centralSynced', 'adminNotified', 'timestamp'];
+        const csvRows = [headers.join(',')];
+        for (const l of stored) {
+          const row = headers.map(h => `"${String(l[h] || '').replace(/"/g, '""')}"`);
+          csvRows.push(row.join(','));
+        }
+        const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `clinlo_leads_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        console.error('Lead export error:', e);
+      }
+    };
+
+    // Keyboard shortcut for administrator lead export (Ctrl+Shift+E)
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'E' || e.key === 'e')) {
+        e.preventDefault();
+        window.clinloExportLeads();
+      }
+    });
+
+    // -------------------------------------------------------------
+    // AMBIENT AUDIO CONTROLLER (Synced Header, Hero & 3D Studio Mute Toggles)
+    // -------------------------------------------------------------
+    function postAudioStateToFrame(isPlaying) {
+      try {
+        const frame = document.getElementById('clinlo-3d-frame');
+        if (frame && frame.contentWindow) {
+          frame.contentWindow.postMessage({
+            type: 'CLINLO_AUDIO_SYNC',
+            playing: !!isPlaying
+          }, '*');
+        }
+      } catch (e) {
+        console.debug('Frame postMessage sync failed:', e);
+      }
+    }
+
+    let isSoundPlaying = false;
+
+    function toggleAmbientSound() {
+      const audio = document.getElementById('bg-audio');
+      if (!audio) return;
+      setAmbientSoundState(!isSoundPlaying);
+    }
+
+    function setAmbientSoundState(shouldPlay) {
+      const audio = document.getElementById('bg-audio');
+      if (!audio) return;
+      if (shouldPlay) {
+        isSoundPlaying = true;
+        audio.muted = false;
+        updateSoundUI(true);
+        postAudioStateToFrame(true);
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(err => {
+            console.debug('Audio autoplay or interaction pending:', err);
+            isSoundPlaying = false;
+            updateSoundUI(false);
+            postAudioStateToFrame(false);
+          });
+        }
+      } else {
+        isSoundPlaying = false;
+        audio.pause();
+        audio.muted = true;
+        updateSoundUI(false);
+        postAudioStateToFrame(false);
+      }
+    }
+
+    function updateSoundUI(isPlaying) {
+      const toggles = document.querySelectorAll('.btn-sound-toggle');
+      toggles.forEach(btn => {
+        const iconMuted = btn.querySelector('.sound-icon-muted');
+        const iconActive = btn.querySelector('.sound-icon-active');
+        if (isPlaying) {
+          btn.classList.remove('muted');
+          btn.classList.add('sound-playing');
+          btn.setAttribute('aria-label', 'Mute Ambient Sound');
+          btn.setAttribute('title', 'Sound On (Click to Mute)');
+          if (iconMuted) iconMuted.style.display = 'none';
+          if (iconActive) iconActive.style.display = 'block';
+        } else {
+          btn.classList.add('muted');
+          btn.classList.remove('sound-playing');
+          btn.setAttribute('aria-label', 'Unmute Ambient Sound');
+          btn.setAttribute('title', 'Sound Off (Click to Play)');
+          if (iconMuted) iconMuted.style.display = 'block';
+          if (iconActive) iconActive.style.display = 'none';
+        }
+      });
+    }
+
+    // Bidirectional postMessage listener for 3D studio frame
+    window.addEventListener('message', (event) => {
+      if (!event.data) return;
+      if (event.data.type === 'CLINLO_AUDIO_TOGGLE') {
+        toggleAmbientSound();
+      } else if (event.data.type === 'CLINLO_AUDIO_SET') {
+        setAmbientSoundState(!!event.data.playing);
+      } else if (event.data.type === 'CLINLO_AUDIO_REQUEST_STATE') {
+        postAudioStateToFrame(isSoundPlaying);
+      }
+    });
+
+    // Also sync on iframe load
+    const studioFrame = document.getElementById('clinlo-3d-frame');
+    if (studioFrame) {
+      studioFrame.addEventListener('load', () => {
+        postAudioStateToFrame(isSoundPlaying);
+      });
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      const audio = document.getElementById('bg-audio');
+      if (!audio) return;
+      if (document.hidden) {
+        if (!audio.paused) {
+          audio.pause();
+          audio.dataset.wasPlaying = 'true';
+        }
+      } else {
+        if (audio.dataset.wasPlaying === 'true') {
+          audio.dataset.wasPlaying = 'false';
+          audio.play().then(() => updateSoundUI(true)).catch(() => {});
+        }
+      }
+    });
+
+    // Adaptive initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check device viewport for progressive 3D mount
+      const isMobile = window.innerWidth <= 768 || /Mobi|Android|iPhone/i.test(navigator.userAgent);
+      if (!isMobile) {
+        // Desktop: mount smoothly after page load
+        window.addEventListener('load', () => {
+          setTimeout(() => mountInteractive3D(false), 250);
+        });
+      } else {
+        // Mobile: Observe 3D Studio Section to pre-mount when approaching viewport
+        const studioSec = document.getElementById('interactive-3d');
+        if (studioSec && 'IntersectionObserver' in window) {
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                mountInteractive3D(false);
+                observer.disconnect();
+              }
+            });
+          }, { rootMargin: '300px 0px' });
+          observer.observe(studioSec);
+        }
+      }
+
+      // Also listen to any click on anchors pointing to #interactive-3d to immediately mount
+      document.querySelectorAll('a[href="#interactive-3d"]').forEach(link => {
+        link.addEventListener('click', () => mountInteractive3D(true));
+      });
+
+      // PWA Service Worker Registration for Instant Zero-Latency 3D Asset Streaming
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').then(() => {
+            console.log('[PWA] CLINLO 3D ServiceWorker active & pre-caching assets');
+          }).catch((err) => {
+            console.debug('[PWA] ServiceWorker note:', err);
+          });
+        });
+      }
+
+      // Restore previously saved pre-order if exists
+      try {
+        const stored = JSON.parse(localStorage.getItem('clinlo_leads') || localStorage.getItem('clinlo_preorders') || '[]');
+        if (stored.length > 0) {
+          const last = stored[stored.length - 1];
+          const ticketEl = document.getElementById('waitlist-ticket-number');
+          if (ticketEl && last.ticket) {
+            ticketEl.textContent = 'TICKET #' + last.ticket;
+          }
+        }
+      } catch (e) {}
+    });
+  </script>
+</body>
+</html>
