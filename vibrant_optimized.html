@@ -1519,6 +1519,40 @@
         width: 175px;
         height: 175px;
       }
+
+      /* Mobile GPU Compositor Optimization: reduce heavy backdrop-filter blur radii & promote layers */
+      .clinlo-capsule-hotspot,
+      .circular-back-btn,
+      .gender-pill-box,
+      .btn-sound-toggle-studio,
+      .top-right-logo,
+      .start-exp-btn,
+      .intro-feature-item,
+      #explore-card,
+      .dock-main-pill,
+      .dock-nav-btn,
+      .floating-next-card,
+      .drawer-top-subtabs-bar,
+      #clinical-card,
+      .clinical-sample-report-card {
+        backdrop-filter: blur(12px) saturate(160%);
+        -webkit-backdrop-filter: blur(12px) saturate(160%);
+      }
+      .circular-back-btn,
+      .btn-sound-toggle-studio,
+      .top-right-logo,
+      .start-exp-btn,
+      .dock-main-pill,
+      .dock-nav-btn {
+        transform: translateZ(0);
+      }
+      .gender-pill-box,
+      .drawer-top-subtabs-bar {
+        transform: translateX(-50%) translateZ(0);
+      }
+      .drawer-top-subtabs-bar.hidden {
+        transform: translateX(-50%) translateY(-20px);
+      }
     }
 
     @media (max-width: 380px) {
@@ -2625,17 +2659,18 @@
         }
       }
 
-      // Mediump on tier 1 mobile devices drastically reduces ALU power and thermal throttling
-      const shaderPrecision = (tier <= 1 || (isMobileDevice && !supportsHighp)) ? 'mediump' : 'highp';
+      // Always use highp when supported (mobile GPUs support highp in WebGL2/modern WebGL1).
+      // Three.js MeshPhysicalMaterial iridescence & Perlin noise mathematically overflow/underflow fp16 (mediump) -> NaN dark holes!
+      const shaderPrecision = supportsHighp ? 'highp' : 'mediump';
 
       // Tier-calibrated Pixel Ratios:
       // Desktop: 1.0 - 1.5 (Retina crystal clarity without redundant 4x fragment supersampling)
-      // Mobile: 1.0 - 1.25 (Old phones use 1.0, high-end mobile uses 1.25)
+      // Mobile: 1.25 - 1.5 (crisp silhouette & facial detail, safe because demand-driven engine sleeps at 0 FPS when idle)
       let targetMaxDPR = 1.5;
       let targetMotionDPR = 1.0;
       if (isMobileDevice) {
-        targetMaxDPR = (tier <= 1) ? 1.0 : Math.min(window.devicePixelRatio || 1, 1.25);
-        targetMotionDPR = (tier <= 1) ? 0.85 : 1.0;
+        targetMaxDPR = Math.min(window.devicePixelRatio || 1, (tier <= 1) ? 1.25 : 1.5);
+        targetMotionDPR = (tier <= 1) ? 0.9 : 1.0;
       } else {
         targetMaxDPR = Math.min(window.devicePixelRatio || 1, 1.5);
         targetMotionDPR = 1.0;
@@ -2647,6 +2682,7 @@
         renderer: rendererStr,
         vendor: vendorStr,
         maxTexSize,
+        supportsHighp,
         shaderPrecision,
         maxDPR: targetMaxDPR,
         motionDPR: targetMotionDPR
@@ -2670,11 +2706,21 @@
     let maxDPR = hardware.maxDPR;
     let motionDPR = hardware.motionDPR;
 
-    // Ground-truth Noomo production renderer config:
-    // antialias is disabled on mobile high-DPI screens (saving 75% fragment shading overhead)
+    // Allow parent landing page vertical scroll gestures to pass smoothly through the embedded 3D iframe on touch devices
+    if (isEmbeddedInIframe) {
+      document.documentElement.style.touchAction = 'pan-y';
+      document.body.style.touchAction = 'pan-y';
+      document.documentElement.style.overscrollBehavior = 'auto';
+      document.body.style.overscrollBehavior = 'auto';
+      const cc = document.getElementById('canvas-container');
+      if (cc) cc.style.touchAction = 'pan-y';
+      if (canvas) canvas.style.touchAction = 'pan-y';
+    }
+
+    // Enable hardware MSAA on mobile too (WebGL2 tile-memory MSAA prevents jagged silhouettes & facial edges)
     const renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: !isMobile,
+      antialias: true,
       alpha: true,
       powerPreference: 'high-performance',
       precision: hardware.shaderPrecision,
@@ -2895,15 +2941,17 @@
     window.addEventListener('touchstart', () => requestFrame(), { passive: true });
     window.addEventListener('touchend', () => requestFrame(), { passive: true });
     window.addEventListener('click', () => requestFrame(), { passive: true });
-    window.addEventListener('scroll', () => requestFrame(), { passive: true });
 
     window.hoverTiltState = hoverTiltState;
     window.syncHoverTiltFromControls = syncHoverTiltFromControls;
     window.setTiltPointer = setTiltPointer;
     window.resetTiltPointer = resetTiltPointer;
 
-    // Mobile Phone Tilt / Gyroscope Navigation (Reactive 3D parallax on device tilt)
+    // Mobile Phone Tilt / Gyroscope Navigation (Reactive 3D parallax on device tilt with noise deadzone)
+    let lastGyroNX = 0;
+    let lastGyroNY = 0;
     function handleDeviceOrientation(e) {
+      if (!isCanvasVisible || !isTabVisible) return;
       if (e.gamma === null || e.beta === null) return;
       // gamma: left-to-right tilt in degrees [-90, 90]
       // beta: front-to-back tilt in degrees [-180, 180], typically ~45 deg in hand
@@ -2911,10 +2959,13 @@
       const b = THREE.MathUtils.clamp(e.beta, 15, 75);
       const nx = g / 30;
       const ny = (b - 45) / 25;
+      if (Math.abs(nx - lastGyroNX) < 0.015 && Math.abs(ny - lastGyroNY) < 0.015) return;
+      lastGyroNX = nx;
+      lastGyroNY = ny;
       setTiltPointer(nx, ny);
     }
 
-    if (window.DeviceOrientationEvent) {
+    if (window.DeviceOrientationEvent && !isEmbeddedInIframe) {
       if (typeof DeviceOrientationEvent.requestPermission === 'function') {
         const reqOrient = () => {
           DeviceOrientationEvent.requestPermission().then(res => {
@@ -2932,10 +2983,18 @@
       }
     }
 
-    // Message listener for parent frame orientation & pointer parallax forwarding
+    // Message listener for parent frame orientation, pointer parallax, and scroll visibility
     window.addEventListener('message', (e) => {
       if (!e.data) return;
-      if (e.data.type === 'DEVICE_ORIENTATION' || e.data.type === 'PHONE_TILT') {
+      if (e.data.type === 'STUDIO_VISIBILITY') {
+        isCanvasVisible = !!e.data.visible;
+        if (!isCanvasVisible) {
+          isRenderingActive = false;
+        } else {
+          clock.getDelta();
+          requestFrame();
+        }
+      } else if (e.data.type === 'DEVICE_ORIENTATION' || e.data.type === 'PHONE_TILT') {
         handleDeviceOrientation(e.data);
       } else if (e.data.type === 'POINTER_MOVE' || e.data.type === 'MOUSE_PARALLAX') {
         if (typeof setTiltPointer === 'function') {
@@ -3256,6 +3315,7 @@
 
     // 7. Avatar Liquid Glass Material (Iridescent Translucent Pearlescent Sheen)
     const normalMap = await textureLoader.loadAsync('./texture/Plastic015A_1K-JPG_NormalGL.jpg');
+    normalMap.colorSpace = THREE.NoColorSpace;
     normalMap.wrapS = normalMap.wrapT = THREE.RepeatWrapping;
     normalMap.repeat.set(2, 2);
     normalMap.anisotropy = maxAnisotropy;
@@ -3264,37 +3324,66 @@
     normalMap.magFilter = THREE.LinearFilter;
 
     // Ground truth from Noomo production (Bnwl1Oju.js):
-    // On mobile devices (or low-tier hardware), transmission is set to 0 with roughness: 0.10.
-    // This completely eliminates Three.js's heavy offscreen framebuffer copy pass on every frame,
-    // reducing mobile GPU bandwidth by ~70% while maintaining the exact same iridescent liquid glass look!
+    // On mobile devices (or low-tier hardware), transmission is set to 0 while using a single-pass
+    // depth pre-pass + luminous pearlescent sheen + vertex tangents + highp precision to eliminate
+    // self-overlap double-blending seams and fp16 NaN dark grey holes while keeping 60 FPS!
     const isMobileOrLowTier = isMobile || (hardware && hardware.tier <= 1);
-    const skinMaterialFemale = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
-      roughness: isMobileOrLowTier ? 0.10 : 0.12,
-      metalness: 0.033,
-      transmission: isMobileOrLowTier ? 0.0 : 0.95,
-      thickness: isMobileOrLowTier ? 0.0 : 0.86,
-      ior: 1.55,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.04,
-      reflectivity: 1.0,
-      iridescence: 1.0,
-      iridescenceIOR: 1.453,
-      sheen: 0.326,
-      sheenRoughness: 1.0,
-      sheenColor: new THREE.Color(0x000000),
-      opacity: 0.38,
-      transparent: true,
-      normalMap: normalMap,
-      normalScale: new THREE.Vector2(0.12, 0.12)
-    });
+    const canUseIridescence = !hardware || hardware.supportsHighp !== false;
+    const skinMaterialFemale = new THREE.MeshPhysicalMaterial(
+      isMobileOrLowTier ? {
+        color: 0xffffff,
+        emissive: new THREE.Color(0xdbeafe),
+        emissiveIntensity: 0.11,
+        roughness: 0.15,
+        metalness: 0.02,
+        transmission: 0.0,
+        thickness: 0.0,
+        ior: 1.55,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.12,
+        reflectivity: 1.0,
+        iridescence: canUseIridescence ? 1.0 : 0.0,
+        iridescenceIOR: 1.453,
+        iridescenceThicknessRange: [120, 480],
+        sheen: 0.42,
+        sheenRoughness: 0.65,
+        sheenColor: new THREE.Color(0xf0f7ff),
+        envMapIntensity: 0.78,
+        opacity: 0.42,
+        transparent: true,
+        depthWrite: false,
+        depthTest: true,
+        depthFunc: THREE.LessEqualDepth,
+        normalMap: normalMap,
+        normalScale: new THREE.Vector2(0.12, 0.12)
+      } : {
+        color: 0xffffff,
+        roughness: 0.12,
+        metalness: 0.033,
+        transmission: 0.95,
+        thickness: 0.86,
+        ior: 1.55,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.04,
+        reflectivity: 1.0,
+        iridescence: 1.0,
+        iridescenceIOR: 1.453,
+        sheen: 0.326,
+        sheenRoughness: 1.0,
+        sheenColor: new THREE.Color(0x000000),
+        opacity: 0.38,
+        transparent: true,
+        normalMap: normalMap,
+        normalScale: new THREE.Vector2(0.12, 0.12)
+      }
+    );
 
     const skinMaterialMale = skinMaterialFemale.clone();
 
     // Perlin noise organic dissolve shader on male & female avatar rigs
-    function setupSkinDissolveShader(material, id, initialDissolve = 0.15) {
-      material.userData.uDissolve = { value: initialDissolve };
-      material.customProgramCacheKey = () => 'dissolve_skin_' + id;
+    function setupSkinDissolveShader(material, id, initialDissolve = 0.15, sharedDissolveUniform = null, isDepthOnly = false) {
+      material.userData.uDissolve = sharedDissolveUniform || { value: initialDissolve };
+      material.customProgramCacheKey = () => (isDepthOnly ? 'dissolve_depth_' : 'dissolve_skin_') + id;
       material.onBeforeCompile = (shader) => {
         shader.uniforms.uDissolve = material.userData.uDissolve;
         material.userData.shader = shader;
@@ -3389,6 +3478,8 @@
         shader.fragmentShader = shader.fragmentShader.replace(
           '#include <dithering_fragment>',
           `#include <dithering_fragment>
+           ${isDepthOnly ? '' : 'gl_FragColor.rgb = max(gl_FragColor.rgb, vec3(0.0));'}
+           ${(!isDepthOnly && isMobileOrLowTier) ? 'gl_FragColor.rgb = max(gl_FragColor.rgb, mix(gl_FragColor.rgb, vec3(0.80, 0.83, 0.97), 0.62));' : ''}
            if (uDissolve > 0.001) {
              if (uDissolve >= 0.999) {
                discard;
@@ -3397,10 +3488,10 @@
              if (noiseValue < uDissolve) {
                discard;
              }
-             float edgeThickness = 0.04 * (1.0 - smoothstep(0.7, 1.0, uDissolve));
+             ${isDepthOnly ? '' : `float edgeThickness = 0.04 * (1.0 - smoothstep(0.7, 1.0, uDissolve));
              if (noiseValue < uDissolve + edgeThickness) {
                gl_FragColor.rgb += vec3(0.25 * (1.0 - smoothstep(0.8, 1.0, uDissolve)));
-             }
+             }`}
            }`
         );
       };
@@ -3409,39 +3500,71 @@
     setupSkinDissolveShader(skinMaterialFemale, 'female', 0.0);
     setupSkinDissolveShader(skinMaterialMale, 'male', 1.0);
 
+    function createDepthPrePassMaterial(id, sharedDissolveUniform) {
+      const mat = new THREE.MeshBasicMaterial({
+        colorWrite: false,
+        depthWrite: true,
+        depthTest: true,
+        polygonOffset: true,
+        polygonOffsetFactor: 0.5,
+        polygonOffsetUnits: 1
+      });
+      setupSkinDissolveShader(mat, id, sharedDissolveUniform.value, sharedDissolveUniform, true);
+      return mat;
+    }
+
+    function configureAvatarScene(avatarScene, skinMat, id) {
+      const originalMeshes = [];
+      avatarScene.traverse(node => {
+        if (node.isMesh) {
+          originalMeshes.push(node);
+        }
+      });
+
+      const depthMat = isMobileOrLowTier ? createDepthPrePassMaterial(id, skinMat.userData.uDissolve) : null;
+
+      originalMeshes.forEach(node => {
+        if (isMobileOrLowTier && node.geometry && node.geometry.index && node.geometry.attributes.position && node.geometry.attributes.normal && node.geometry.attributes.uv) {
+          try {
+            node.geometry.computeTangents();
+          } catch (e) {}
+        }
+        node.material = skinMat;
+        node.renderOrder = isMobileOrLowTier ? 3 : 2;
+        if (node.geometry) node.geometry.computeBoundingSphere();
+        node.matrixAutoUpdate = false;
+        node.updateMatrix();
+
+        if (depthMat && node.parent) {
+          const depthMesh = new THREE.Mesh(node.geometry, depthMat);
+          depthMesh.position.copy(node.position);
+          depthMesh.rotation.copy(node.rotation);
+          depthMesh.scale.copy(node.scale);
+          depthMesh.renderOrder = 2;
+          depthMesh.matrixAutoUpdate = false;
+          depthMesh.updateMatrix();
+          node.parent.add(depthMesh);
+        }
+      });
+
+      avatarScene.matrixAutoUpdate = false;
+      avatarScene.updateMatrix();
+    }
+
     try {
-      // Parallel streaming load of both avatar rigs
+      // Parallel streaming load of both avatar rigs (use optimized mobile male mesh on mobile)
+      const maleModelPath = isMobile ? './models/skinMB2Mobile.glb' : './models/skinMB2.glb';
       const [femaleGltf, maleGltf] = await Promise.all([
         gltfLoader.loadAsync('./models/skinF2.glb'),
-        gltfLoader.loadAsync('./models/skinMB2.glb')
+        gltfLoader.loadAsync(maleModelPath)
       ]);
 
       femaleAvatar = femaleGltf.scene;
-      femaleAvatar.traverse(node => {
-        if (node.isMesh) {
-          node.material = skinMaterialFemale;
-          node.renderOrder = 2;
-          if (node.geometry) node.geometry.computeBoundingSphere();
-          node.matrixAutoUpdate = false;
-          node.updateMatrix();
-        }
-      });
-      femaleAvatar.matrixAutoUpdate = false;
-      femaleAvatar.updateMatrix();
+      configureAvatarScene(femaleAvatar, skinMaterialFemale, 'female');
       scene.add(femaleAvatar);
 
       maleAvatar = maleGltf.scene;
-      maleAvatar.traverse(node => {
-        if (node.isMesh) {
-          node.material = skinMaterialMale;
-          node.renderOrder = 2;
-          if (node.geometry) node.geometry.computeBoundingSphere();
-          node.matrixAutoUpdate = false;
-          node.updateMatrix();
-        }
-      });
-      maleAvatar.matrixAutoUpdate = false;
-      maleAvatar.updateMatrix();
+      configureAvatarScene(maleAvatar, skinMaterialMale, 'male');
       maleAvatar.visible = false;
       scene.add(maleAvatar);
     } catch (e) {
@@ -4099,10 +4222,10 @@
         exploreHormonesIcon.src = femaleActive ? 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzUiIGhlaWdodD0iMzUiIHZpZXdCb3g9IjAgMCAzNSAzNSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTcuMjM1NyIgY3k9IjEyLjg0MTUiIHI9IjEwIiB0cmFuc2Zvcm09InJvdGF0ZSgxMzMuMTQ4IDE3LjIzNTcgMTIuODQxNSkiIHN0cm9rZT0iYmxhY2siLz4KPHBhdGggZD0iTTE3LjIxMzcgMjMuMTAwNkwxNy4yMTM3IDI3LjUwMU0xNy4yMTM3IDI3LjUwMUwxMi40MDM2IDI3LjUwMU0xNy4yMTM3IDI3LjUwMUwxNy4yMTM3IDMxLjVNMTcuMjEzNyAyNy41MDFMMjIuMDY5MyAyNy41MDEiIHN0cm9rZT0iYmxhY2siLz4KPC9zdmc+Cg==' : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjciIGhlaWdodD0iMjciIHZpZXdCb3g9IjAgMCAyNyAyNyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTEuMzU3MSIgY3k9IjE1LjY0MjgiIHI9IjEwLjg1NzEiIHN0cm9rZT0iYmxhY2siLz4KPHBhdGggZD0iTTE5LjQ2ODggOC4wNzE0M0wyNi40OTk0IDEuNTgxNjNNMjYuNDk5NCAxLjU4MTYzTDE5LjQ2ODggMC41TTI2LjQ5OTQgMS41ODE2M1Y4LjYxMjI0IiBzdHJva2U9ImJsYWNrIi8+Cjwvc3ZnPgo=';
       }
 
-      let targetOpacity = 0.38;
-      let targetRoughness = 0.12;
+      let targetOpacity = isMobileOrLowTier ? 0.42 : 0.38;
+      let targetRoughness = isMobileOrLowTier ? 0.15 : 0.12;
       if (state === 'slider') {
-        targetOpacity = 0.14;
+        targetOpacity = isMobileOrLowTier ? 0.16 : 0.14;
         targetRoughness = 0.05;
       }
       if (state === 'story') {
@@ -4746,9 +4869,14 @@
     requestFrame();
 
     // Window Resize Handling (Adaptive physical display resolution & re-profiling)
+    let lastResizeW = width;
+    let lastResizeH = height;
     window.addEventListener('resize', () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
+      if (w === lastResizeW && h === lastResizeH) return;
+      lastResizeW = w;
+      lastResizeH = h;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
