@@ -2221,27 +2221,8 @@
           <div id="waitlist-success" class="waitlist-feedback" role="alert" aria-live="polite">
             <div id="waitlist-status-icon" style="font-size: 2.2rem; margin-bottom: 0.5rem; color: var(--cyan-600, #0284c7);">✓</div>
             <h3 id="waitlist-status-title" style="font-size: 1.35rem; font-weight: 800; color: #09122c; margin-bottom: 0.35rem;">Founding Pre-Order Confirmed</h3>
-            <p id="waitlist-status-subtitle" style="color: #475569; font-size: 0.95rem; margin-bottom: 0.75rem;">Your wellness membership pre-registration has been recorded & secured:</p>
-            <div id="waitlist-ticket-number" class="waitlist-ticket">TICKET #CLINLO-1842</div>
-
-            <div id="waitlist-ticket-summary" class="waitlist-summary-card">
-              <div class="summary-line"><span class="summary-label">Membership Tier:</span> <strong id="summary-plan-name" class="summary-value">Half Yearly Protocol</strong></div>
-              <div class="summary-line"><span class="summary-label">Locked Rate:</span> <span><strong id="summary-plan-price" class="summary-value">₹8,999</strong> <span id="summary-plan-period" class="summary-sub" style="font-size:0.8rem;color:#64748b;">total</span></span></div>
-              <div class="summary-line"><span class="summary-label">Registrant:</span> <strong id="summary-client-name" class="summary-value">Alexander Vance</strong></div>
-              <div class="summary-line"><span class="summary-label">Direct Contact:</span> <strong id="summary-client-contact" class="summary-value">+91 98765 43210</strong></div>
-              <div class="summary-line"><span class="summary-label">Transmission Status:</span> <span id="summary-sync-badge" class="sync-badge synced">✓ Dispatched to admin@clinlo.com</span></div>
-            </div>
-
-            <div class="waitlist-dispatch-actions">
-              <a id="btn-mail-dispatch" href="#" class="btn-dispatch-action btn-mail" target="_blank" rel="noopener">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                <span>Email Copy to admin@clinlo.com</span>
-              </a>
-              <a id="btn-wa-dispatch" href="#" class="btn-dispatch-action btn-wa" target="_blank" rel="noopener">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
-                <span>WhatsApp Concierge</span>
-              </a>
-            </div>
+            <p id="waitlist-status-subtitle" style="color: #475569; font-size: 0.95rem; margin-bottom: 0.75rem;">Your wellness membership pre-registration has been recorded & transmitted:</p>
+            <div id="waitlist-ticket-number" class="waitlist-ticket" style="margin-bottom: 1.25rem;">TICKET #CLINLO-1842</div>
 
             <div>
               <button type="button" class="btn-reset-form" onclick="resetWaitlistForm()">
@@ -2536,7 +2517,7 @@
 
       // 3.5 Serverless static form dispatch fallback (FormSubmit or Webhook for GitHub Pages)
       if (!isCentralRecorded) {
-        const staticEndpoint = window.CLINLO_WEBHOOK_URL || 'https://formsubmit.co/ajax/admin@clinlo.com';
+        const staticEndpoint = window.CLINLO_WEBHOOK_URL || 'https://formsubmit.co/ajax/ad836d6f96c84a24b0d704609a59adf1';
         try {
           fetch(staticEndpoint, {
             method: 'POST',
