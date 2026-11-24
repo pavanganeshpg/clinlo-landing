@@ -1842,7 +1842,7 @@
       if (userManuallyMuted) return;
       if (isEmbeddedInIframe) {
         try {
-          window.parent.postMessage({ type: 'CLINLO_AUDIO_SET', playing: true }, '*');
+          window.parent.postMessage({ type: 'CLINLO_AUDIO_SET', playing: true, fromUser: false }, '*');
         } catch (e) {}
         return;
       }
@@ -1857,6 +1857,32 @@
       }
     }
 
+    function handleStudioFirstGesture(event) {
+      if (userManuallyMuted || isStudioAudioPlaying) return;
+      if (event && event.target && typeof event.target.closest === 'function' && event.target.closest('#studio-sound-toggle')) {
+        return;
+      }
+      if (isEmbeddedInIframe) {
+        try {
+          window.parent.postMessage({ type: 'CLINLO_AUDIO_UNLOCK' }, '*');
+        } catch (e) {}
+      } else {
+        startAmbientSound();
+      }
+    }
+
+    ['pointerdown', 'touchend', 'click', 'keydown'].forEach((evtName) => {
+      window.addEventListener(evtName, handleStudioFirstGesture, { capture: true, passive: true });
+    });
+
+    if (!isEmbeddedInIframe) {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startAmbientSound);
+      } else {
+        startAmbientSound();
+      }
+    }
+
     window.toggleStudioSound = toggleStudioSound;
     window.toggleSound = toggleStudioSound;
     window.startAmbientSound = startAmbientSound;
@@ -1866,7 +1892,9 @@
       if (event.data.type === 'CLINLO_AUDIO_SYNC') {
         const playing = !!event.data.playing;
         isStudioAudioPlaying = playing;
-        userManuallyMuted = !playing;
+        if (typeof event.data.userMuted === 'boolean') {
+          userManuallyMuted = event.data.userMuted;
+        }
         updateStudioSoundUI(playing);
         if (!isEmbeddedInIframe && studioAudio) {
           if (playing && studioAudio.paused) {

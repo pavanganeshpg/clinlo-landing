@@ -2250,7 +2250,7 @@
           <!-- Live Site View Counter Banner -->
           <div class="live-views-banner" id="live-views-container">
             <span class="live-status-dot"></span>
-            <span class="views-metric"><strong id="site-views-counter">1,731</strong> Site Visitors</span>
+            <span class="views-metric"><strong id="site-views-counter">1,733</strong> Site Visitors</span>
             <span class="views-divider">•</span>
             <span class="views-subtext">CLINLO Wellness Center Pre-Orders Live</span>
           </div>
@@ -3238,7 +3238,8 @@ Please confirm onboarding schedule and founding membership reservation.`
         if (frame && frame.contentWindow) {
           frame.contentWindow.postMessage({
             type: 'CLINLO_AUDIO_SYNC',
-            playing: !!isPlaying
+            playing: !!isPlaying,
+            userMuted: !!userManuallyMuted
           }, '*');
         }
       } catch (e) {
@@ -3247,31 +3248,74 @@ Please confirm onboarding schedule and founding membership reservation.`
     }
 
     let isSoundPlaying = false;
+    let userManuallyMuted = false;
+    let audioUnlockBound = false;
+
+    function handleFirstGestureAudioUnlock(event) {
+      if (userManuallyMuted || isSoundPlaying) {
+        removeAudioUnlockListeners();
+        return;
+      }
+      if (event && event.target && typeof event.target.closest === 'function' && event.target.closest('.btn-sound-toggle')) {
+        return;
+      }
+      setAmbientSoundState(true, false);
+    }
+
+    function bindAudioUnlockListeners() {
+      if (audioUnlockBound || userManuallyMuted) return;
+      audioUnlockBound = true;
+      ['pointerdown', 'touchend', 'click', 'keydown'].forEach((evtName) => {
+        window.addEventListener(evtName, handleFirstGestureAudioUnlock, { capture: true, passive: true });
+      });
+    }
+
+    function removeAudioUnlockListeners() {
+      if (!audioUnlockBound) return;
+      audioUnlockBound = false;
+      ['pointerdown', 'touchend', 'click', 'keydown'].forEach((evtName) => {
+        window.removeEventListener(evtName, handleFirstGestureAudioUnlock, { capture: true });
+      });
+    }
 
     function toggleAmbientSound() {
       const audio = document.getElementById('bg-audio');
       if (!audio) return;
-      setAmbientSoundState(!isSoundPlaying);
+      setAmbientSoundState(!isSoundPlaying, true);
     }
 
-    function setAmbientSoundState(shouldPlay) {
+    function setAmbientSoundState(shouldPlay, isUserToggle = true) {
       const audio = document.getElementById('bg-audio');
       if (!audio) return;
       if (shouldPlay) {
-        isSoundPlaying = true;
+        if (isUserToggle) userManuallyMuted = false;
+        audio.volume = 0.45;
         audio.muted = false;
-        updateSoundUI(true);
-        postAudioStateToFrame(true);
         const playPromise = audio.play();
         if (playPromise !== undefined) {
-          playPromise.catch(err => {
-            console.debug('Audio autoplay or interaction pending:', err);
+          playPromise.then(() => {
+            isSoundPlaying = true;
+            removeAudioUnlockListeners();
+            updateSoundUI(true);
+            postAudioStateToFrame(true);
+          }).catch(err => {
+            console.debug('Audio autoplay pending user gesture:', err);
             isSoundPlaying = false;
             updateSoundUI(false);
             postAudioStateToFrame(false);
+            if (!userManuallyMuted) bindAudioUnlockListeners();
           });
+        } else {
+          isSoundPlaying = true;
+          removeAudioUnlockListeners();
+          updateSoundUI(true);
+          postAudioStateToFrame(true);
         }
       } else {
+        if (isUserToggle) {
+          userManuallyMuted = true;
+          removeAudioUnlockListeners();
+        }
         isSoundPlaying = false;
         audio.pause();
         audio.muted = true;
@@ -3308,8 +3352,12 @@ Please confirm onboarding schedule and founding membership reservation.`
       if (!event.data) return;
       if (event.data.type === 'CLINLO_AUDIO_TOGGLE') {
         toggleAmbientSound();
+      } else if (event.data.type === 'CLINLO_AUDIO_UNLOCK') {
+        if (!userManuallyMuted && !isSoundPlaying) {
+          setAmbientSoundState(true, false);
+        }
       } else if (event.data.type === 'CLINLO_AUDIO_SET') {
-        setAmbientSoundState(!!event.data.playing);
+        setAmbientSoundState(!!event.data.playing, event.data.fromUser !== false);
       } else if (event.data.type === 'CLINLO_AUDIO_REQUEST_STATE') {
         postAudioStateToFrame(isSoundPlaying);
       }
@@ -3332,15 +3380,18 @@ Please confirm onboarding schedule and founding membership reservation.`
           audio.dataset.wasPlaying = 'true';
         }
       } else {
-        if (audio.dataset.wasPlaying === 'true') {
+        if (audio.dataset.wasPlaying === 'true' && !userManuallyMuted) {
           audio.dataset.wasPlaying = 'false';
-          audio.play().then(() => updateSoundUI(true)).catch(() => {});
+          setAmbientSoundState(true, false);
         }
       }
     });
 
     // Adaptive initialization
     document.addEventListener('DOMContentLoaded', () => {
+      // Play ambient background music by default (or automatically on first user gesture if browser blocks initial autoplay)
+      setAmbientSoundState(true, false);
+      bindAudioUnlockListeners();
       // Check device viewport for progressive 3D mount
       const isMobile = window.innerWidth <= 768 || /Mobi|Android|iPhone/i.test(navigator.userAgent);
       if (!isMobile) {
