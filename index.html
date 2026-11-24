@@ -34,6 +34,7 @@
   <meta name="theme-color" content="#e0f2fe">
   <meta name="clinlo-api-endpoint" content="">
   <meta name="clinlo-webhook-url" content="">
+  <meta name="clinlo-web3forms-key" content="">
 
   <!-- Structured Data (JSON-LD) -->
   <script type="application/ld+json">
@@ -2462,9 +2463,11 @@
     const isPureStaticHost = hostName.endsWith('.github.io') || hostName === 'github.io' || hostName.endsWith('.pages.dev') || hostName.endsWith('.netlify.app') || hostName.endsWith('.vercel.app') || hostName === 'clinlo.com' || hostName === 'www.clinlo.com';
     const metaApiEndpoint = (document.querySelector('meta[name="clinlo-api-endpoint"]')?.getAttribute('content') || '').trim();
     const metaWebhookUrl = (document.querySelector('meta[name="clinlo-webhook-url"]')?.getAttribute('content') || '').trim();
+    const metaWeb3FormsKey = (document.querySelector('meta[name="clinlo-web3forms-key"]')?.getAttribute('content') || '').trim();
     const defaultApiEndpoint = isLocalHost ? 'http://127.0.0.1:8086/api/waitlist' : (isPureStaticHost ? '' : '/api/waitlist');
     window.CLINLO_API_ENDPOINT = window.CLINLO_API_ENDPOINT || window.CLINLO_WAITLIST_ENDPOINT || metaApiEndpoint || defaultApiEndpoint;
     window.CLINLO_WEBHOOK_URL = window.CLINLO_WEBHOOK_URL || metaWebhookUrl || '';
+    window.CLINLO_WEB3FORMS_KEY = window.CLINLO_WEB3FORMS_KEY || metaWeb3FormsKey || '';
     window.CLINLO_VIEWS_ENDPOINT = window.CLINLO_VIEWS_ENDPOINT || (isLocalHost ? 'http://127.0.0.1:8086/api/views' : (isPureStaticHost ? '' : '/api/views'));
 
     // Accurate Site View Counter Sync
@@ -2733,7 +2736,56 @@
           }
         }
 
-        // Try FormSubmit whenever email has not yet been transmitted via primary API / Worker / Webhook
+        // 3.6 Fast Web3Forms Static Relay (<200ms, if clinlo-web3forms-key is configured)
+        if (!emailTransmitted) {
+          const web3FormsKey = (window.CLINLO_WEB3FORMS_KEY || '').trim();
+          if (web3FormsKey) {
+            try {
+              const wfCtrl = new AbortController();
+              const wfTid = setTimeout(() => wfCtrl.abort(), 10000);
+              const wfRes = await fetch('https://api.web3forms.com/submit', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                  access_key: web3FormsKey,
+                  subject: `CLINLO Pre-Order [TICKET #${confirmedTicket}] - ${name}`,
+                  from_name: 'CLINLO Pre-Orders',
+                  ticket: confirmedTicket,
+                  name,
+                  phone,
+                  email: email || 'Not Provided (WhatsApp / Phone Direct Concierge)',
+                  plan: planName,
+                  plan_key: planKey,
+                  price: `₹${planPrice} (${planPeriod})`,
+                  original_price: `₹${originalPrice}`,
+                  admin_target: 'admin@clinlo.com',
+                  timestamp: new Date().toISOString()
+                }),
+                signal: wfCtrl.signal
+              });
+              clearTimeout(wfTid);
+              let wfData = null;
+              try {
+                wfData = await wfRes.json();
+              } catch (e) {}
+              if (wfRes.ok && wfData && wfData.success) {
+                staticTransmitted = true;
+                emailTransmitted = true;
+              } else {
+                lastFailureReason = (wfData && wfData.message) || `Web3Forms rejected (HTTP ${wfRes.status})`;
+              }
+            } catch (wfErr) {
+              lastFailureReason = wfErr && wfErr.name === 'AbortError'
+                ? 'Web3Forms relay timed out'
+                : 'Web3Forms relay unreachable';
+            }
+          }
+        }
+
+        // 3.7 Try FormSubmit whenever email has not yet been transmitted via primary API / Worker / Webhook / Web3Forms
         if (!emailTransmitted) {
           const formSubmitEndpoint = window.CLINLO_FORMSUBMIT_ENDPOINT || 'https://formsubmit.co/ajax/ad836d6f96c84a24b0d704609a59adf1';
           try {
