@@ -1737,6 +1737,119 @@
 
   
   <!-- clinlo High-Performance Universal Engine (Optimized VPS Build) -->
+  <script>
+    // Default Ambient Sound Engine (non-module synchronous init so parent <-> iframe
+    // audio sync & button controls work immediately even while 3D ES modules/GLBs load)
+    let studioAudio = null;
+    let isStudioAudioPlaying = false;
+    let userManuallyMuted = false;
+    const isEmbeddedInIframe = (window.self !== window.top);
+
+    function initStudioAudio() {
+      if (!studioAudio) {
+        studioAudio = new Audio('./audio/Music.mp3');
+        studioAudio.loop = true;
+        studioAudio.volume = isEmbeddedInIframe ? 0 : 0.45;
+      }
+    }
+
+    function updateStudioSoundUI(playing) {
+      const btn = document.getElementById('studio-sound-toggle');
+      if (!btn) return;
+      const iconMuted = btn.querySelector('.sound-icon-muted');
+      const iconActive = btn.querySelector('.sound-icon-active');
+      if (playing) {
+        btn.classList.add('sound-playing');
+        btn.classList.remove('muted');
+        btn.setAttribute('aria-label', 'Mute Ambient Sound');
+        btn.setAttribute('title', 'Sound On (Click to Mute)');
+        if (iconMuted) iconMuted.style.display = 'none';
+        if (iconActive) iconActive.style.display = 'block';
+      } else {
+        btn.classList.remove('sound-playing');
+        btn.classList.add('muted');
+        btn.setAttribute('aria-label', 'Unmute Ambient Sound');
+        btn.setAttribute('title', 'Sound Off (Click to Play)');
+        if (iconMuted) iconMuted.style.display = 'block';
+        if (iconActive) iconActive.style.display = 'none';
+      }
+    }
+
+    function toggleStudioSound() {
+      if (isEmbeddedInIframe) {
+        userManuallyMuted = !isStudioAudioPlaying;
+        try {
+          window.parent.postMessage({ type: 'CLINLO_AUDIO_TOGGLE' }, '*');
+        } catch (e) {
+          console.warn('PostMessage to parent failed:', e);
+        }
+        return;
+      }
+      initStudioAudio();
+      if (!studioAudio) return;
+      if (studioAudio.paused) {
+        userManuallyMuted = false;
+        studioAudio.play().then(() => {
+          isStudioAudioPlaying = true;
+          updateStudioSoundUI(true);
+        }).catch(err => {
+          console.warn('Audio play prevented:', err);
+          updateStudioSoundUI(false);
+        });
+      } else {
+        userManuallyMuted = true;
+        studioAudio.pause();
+        isStudioAudioPlaying = false;
+        updateStudioSoundUI(false);
+      }
+    }
+
+    function startAmbientSound() {
+      if (userManuallyMuted) return;
+      if (isEmbeddedInIframe) {
+        try {
+          window.parent.postMessage({ type: 'CLINLO_AUDIO_SET', playing: true }, '*');
+        } catch (e) {}
+        return;
+      }
+      initStudioAudio();
+      if (studioAudio && studioAudio.paused && !userManuallyMuted) {
+        studioAudio.play().then(() => {
+          isStudioAudioPlaying = true;
+          updateStudioSoundUI(true);
+        }).catch(() => {
+          updateStudioSoundUI(false);
+        });
+      }
+    }
+
+    window.toggleStudioSound = toggleStudioSound;
+    window.toggleSound = toggleStudioSound;
+    window.startAmbientSound = startAmbientSound;
+
+    window.addEventListener('message', (event) => {
+      if (!event.data) return;
+      if (event.data.type === 'CLINLO_AUDIO_SYNC') {
+        const playing = !!event.data.playing;
+        isStudioAudioPlaying = playing;
+        userManuallyMuted = !playing;
+        updateStudioSoundUI(playing);
+        if (!isEmbeddedInIframe && studioAudio) {
+          if (playing && studioAudio.paused) {
+            studioAudio.play().catch(() => {});
+          } else if (!playing && !studioAudio.paused) {
+            studioAudio.pause();
+          }
+        }
+      }
+    });
+
+    if (isEmbeddedInIframe) {
+      try {
+        window.parent.postMessage({ type: 'CLINLO_AUDIO_REQUEST_STATE' }, '*');
+      } catch (e) {}
+    }
+  </script>
 
   <script type="module">
     import * as THREE from 'three';
@@ -2592,6 +2705,40 @@
 
     const clock = new THREE.Clock();
 
+    // Pre-initialize shared render-loop and scene state before any async top-level await
+    // or event listener registration to avoid Temporal Dead Zone ReferenceErrors.
+    let isTabVisible = !document.hidden;
+    let isCanvasVisible = true;
+    let isRenderingActive = false;
+    let isContextLost = false;
+    let isDirty = true;
+    let lastInteractionTime = performance.now();
+    let lastFrameTime = performance.now();
+    let currentState = 'choose';
+    let currentCategoryIndex = 0;
+    let activeHotspotKey = null;
+    let activeStoryTab = 0;
+    let activeCameraTweens = 0;
+    let currentVisibleOrganIds = [];
+    let currentHoveredCategoryId = null;
+    const organFadeTweens = {};
+    const lightFadeTweens = {};
+    let activeHotspotElements = [];
+    let genderTweenFemale = null;
+    let genderTweenMale = null;
+    let podiumMesh = null;
+    let podiumMaterial = null;
+    let maleAvatar = null;
+    let femaleAvatar = null;
+    let currentGender = 'female';
+    const organs = {};
+    const organMaterials = {};
+    let dnaMeshNode = null;
+    let CATEGORIES = [];
+    const _projVec = new THREE.Vector3();
+    const _prevCamPos = new THREE.Vector3();
+    const _prevCamQuat = new THREE.Quaternion();
+
     // =========================================================================
     // Authentic Reverse-Engineered Noomo Pointer Parallax / 3D Model Tilt Engine
     // (7° spherical orbit around controls.target with velocity-preserving GSAP quickTo damping)
@@ -2898,8 +3045,6 @@
     }
 
     // 5. Liquid Swirl Podium (Ground Truth models/podium.glb + procedural shader)
-    let podiumMesh = null;
-    let podiumMaterial = null;
     try {
       const podiumGltf = await gltfLoader.loadAsync('./models/podium.glb');
       const ae = {
@@ -3264,9 +3409,6 @@
     setupSkinDissolveShader(skinMaterialFemale, 'female', 0.0);
     setupSkinDissolveShader(skinMaterialMale, 'male', 1.0);
 
-    let maleAvatar = null, femaleAvatar = null;
-    let currentGender = 'female';
-
     try {
       // Parallel streaming load of both avatar rigs
       const [femaleGltf, maleGltf] = await Promise.all([
@@ -3307,8 +3449,6 @@
     }
 
     // 8. Internal Organs Setup with Authentic Subsurface Scattering Materials & Ethereal Glow
-    const organs = {};
-    const organMaterials = {};
     const whiteTex = await textureLoader.loadAsync('./texture/white.jpg');
     whiteTex.wrapS = whiteTex.wrapT = THREE.RepeatWrapping;
     whiteTex.anisotropy = maxAnisotropy;
@@ -3328,8 +3468,6 @@
       { id: 'dna', file: './models/dna.glb', diffuse: new THREE.Color().setRGB(3.2, 0.40, 0.15), thickColor: new THREE.Color(1.0, 0.55, 0.45), specular: 0x280612, shininess: 517, distortion: 0.74, ambient: 0.66, attenuation: 1.21, power: 3.01, scale: 16.0 },
       { id: 'cell', file: './models/cellNew.glb', diffuse: new THREE.Color().setRGB(0.15, 0.45, 2.80), thickColor: new THREE.Color(0.40, 0.70, 1.00), specular: 0x102040, shininess: 415, distortion: 0.72, ambient: 0.35, attenuation: 1.01, power: 4.81, scale: 16.0 }
     ];
-
-    let dnaMeshNode = null;
 
     // Parallel streaming decompression of all 12 organ assets simultaneously
     await Promise.all(organConfigs.map(async (cfg) => {
@@ -3460,7 +3598,7 @@
     }
 
     // Categories matching Ground Truth Noomo Order and Camera Viewpoints
-    const CATEGORIES = [
+    CATEGORIES = [
       { 
         id: 'neurology', 
         name: 'Neurology', 
@@ -3580,10 +3718,6 @@
     ];
 
     // State Machine: 'choose' | 'list' | 'slider' | 'story'
-    let currentState = 'choose';
-    let currentCategoryIndex = 0;
-    let activeHotspotKey = null;
-    let activeStoryTab = 0;
 
     // Viewpoint cameras for Intro and Overview
     const CAM_INTRO = { cam: { x: 0, y: 4.02, z: 2.50 }, target: { x: 0, y: 4.02, z: 0 } };
@@ -3595,7 +3729,6 @@
     syncHoverTiltFromControls();
 
     // Dynamic 2D Hotspot Tags Tracking
-    let activeHotspotElements = [];
 
     function clearTags() {
       activeHotspotElements.forEach(item => {
@@ -3646,9 +3779,6 @@
     }
 
     // Zero-allocation projection vector and camera change caching (prevents layout thrashing & reflow)
-    const _projVec = new THREE.Vector3();
-    const _prevCamPos = new THREE.Vector3();
-    const _prevCamQuat = new THREE.Quaternion();
 
     function updateTagsProjection(force = false) {
       // Check if camera or tilt actually moved; skip DOM updates when stationary to save 90% CPU
@@ -3684,18 +3814,15 @@
       // Position Focus Ring around active organ in story mode
       if (currentState === 'story') {
         const cat = CATEGORIES[currentCategoryIndex];
-        _projVec.copy(cat.focusPos).project(camera);
-        const fx = (_projVec.x * halfW) + halfW;
-        const fy = (-_projVec.y * halfH) + halfH;
-        const scaleStr = focusRing.classList.contains('active') ? 'scale(1)' : 'scale(0.85)';
-        focusRing.style.transform = `translate3d(${fx.toFixed(2)}px, ${fy.toFixed(2)}px, 0) translate(-50%, -50%) ${scaleStr}`;
+        if (cat && cat.focusPos) {
+          _projVec.copy(cat.focusPos).project(camera);
+          const fx = (_projVec.x * halfW) + halfW;
+          const fy = (-_projVec.y * halfH) + halfH;
+          const scaleStr = focusRing.classList.contains('active') ? 'scale(1)' : 'scale(0.85)';
+          focusRing.style.transform = `translate3d(${fx.toFixed(2)}px, ${fy.toFixed(2)}px, 0) translate(-50%, -50%) ${scaleStr}`;
+        }
       }
     }
-
-    let currentVisibleOrganIds = [];
-    let currentHoveredCategoryId = null;
-    const organFadeTweens = {};
-    const lightFadeTweens = {};
 
     function setOrganVisibility(visibleOrganIds, activeLights = []) {
       currentVisibleOrganIds = visibleOrganIds;
@@ -4026,7 +4153,6 @@
     window.podiumMesh = podiumMesh;
 
     // Unified Camera Tween Helper with Zero-Jitter Tween Lifecycle & Hover Tilt Sync
-    let activeCameraTweens = 0;
     function animateCamera(targetCam, targetLookAt, duration = 1.0) {
       hoverTiltState.enabled = false;
       hoverTiltState.targetDeltaAz = 0;
@@ -4401,8 +4527,6 @@
 
     // Gender Switcher
     // Smooth Organic Male / Female Model Transition via Noise Dissolve Shader
-    let genderTweenFemale = null;
-    let genderTweenMale = null;
 
     window.switchGender = function(g) {
       if (currentGender === g && !genderTweenFemale && !genderTweenMale) return;
@@ -4472,127 +4596,7 @@
       requestFrame();
     };
 
-    // Default Ambient Sound Engine with Auto-Start, Synchronization & Polite Autoplay Fallback
-    let studioAudio = null;
-    let isStudioAudioPlaying = false;
-    let userManuallyMuted = false;
-    const isEmbeddedInIframe = (window.self !== window.top);
-
-    function initStudioAudio() {
-      if (!studioAudio) {
-        studioAudio = new Audio('./audio/Music.mp3');
-        studioAudio.loop = true;
-        // In iframe mode, keep local Audio muted to prevent duplicate audio echo with parent index.html
-        studioAudio.volume = isEmbeddedInIframe ? 0 : 0.45;
-      }
-    }
-
-    function updateStudioSoundUI(playing) {
-      const btn = document.getElementById('studio-sound-toggle');
-      if (!btn) return;
-      const iconMuted = btn.querySelector('.sound-icon-muted');
-      const iconActive = btn.querySelector('.sound-icon-active');
-      if (playing) {
-        btn.classList.add('sound-playing');
-        btn.classList.remove('muted');
-        btn.setAttribute('aria-label', 'Mute Ambient Sound');
-        btn.setAttribute('title', 'Sound On (Click to Mute)');
-        if (iconMuted) iconMuted.style.display = 'none';
-        if (iconActive) iconActive.style.display = 'block';
-      } else {
-        btn.classList.remove('sound-playing');
-        btn.classList.add('muted');
-        btn.setAttribute('aria-label', 'Unmute Ambient Sound');
-        btn.setAttribute('title', 'Sound Off (Click to Play)');
-        if (iconMuted) iconMuted.style.display = 'block';
-        if (iconActive) iconActive.style.display = 'none';
-      }
-    }
-
-    function toggleStudioSound() {
-      if (isEmbeddedInIframe) {
-        userManuallyMuted = !isStudioAudioPlaying;
-        // Forward toggle request to parent index.html to keep all 3 buttons in sync
-        try {
-          window.parent.postMessage({ type: 'CLINLO_AUDIO_TOGGLE' }, '*');
-        } catch (e) {
-          console.warn('PostMessage to parent failed:', e);
-        }
-        return;
-      }
-      initStudioAudio();
-      if (!studioAudio) return;
-      if (studioAudio.paused) {
-        userManuallyMuted = false;
-        studioAudio.play().then(() => {
-          isStudioAudioPlaying = true;
-          updateStudioSoundUI(true);
-        }).catch(err => {
-          console.warn('Audio play prevented:', err);
-          updateStudioSoundUI(false);
-        });
-      } else {
-        userManuallyMuted = true;
-        studioAudio.pause();
-        isStudioAudioPlaying = false;
-        updateStudioSoundUI(false);
-      }
-    }
-
-    function startAmbientSound() {
-      if (userManuallyMuted) return; // Respect explicit user mute preference
-      if (isEmbeddedInIframe) {
-        try {
-          window.parent.postMessage({ type: 'CLINLO_AUDIO_SET', playing: true }, '*');
-        } catch (e) {}
-        return;
-      }
-      initStudioAudio();
-      if (studioAudio && studioAudio.paused && !userManuallyMuted) {
-        studioAudio.play().then(() => {
-          isStudioAudioPlaying = true;
-          updateStudioSoundUI(true);
-        }).catch(() => {
-          updateStudioSoundUI(false);
-        });
-      }
-    }
-
-    window.toggleStudioSound = toggleStudioSound;
-    window.toggleSound = toggleStudioSound;
-
-    // Listen for audio synchronization commands from parent index.html
-    window.addEventListener('message', (event) => {
-      if (!event.data) return;
-      if (event.data.type === 'CLINLO_AUDIO_SYNC') {
-        const playing = !!event.data.playing;
-        isStudioAudioPlaying = playing;
-        userManuallyMuted = !playing;
-        updateStudioSoundUI(playing);
-        if (!isEmbeddedInIframe && studioAudio) {
-          if (playing && studioAudio.paused) {
-            studioAudio.play().catch(() => {});
-          } else if (!playing && !studioAudio.paused) {
-            studioAudio.pause();
-          }
-        }
-      }
-    });
-
-    if (isEmbeddedInIframe) {
-      try {
-        window.parent.postMessage({ type: 'CLINLO_AUDIO_REQUEST_STATE' }, '*');
-      } catch (e) {}
-    }
-
     // Smart Power-Aware Demand-Driven Render & Animation Engine with Resilient Lifecycle Guards
-    let isTabVisible = !document.hidden;
-    let isCanvasVisible = true;
-    let isRenderingActive = false;
-    let isContextLost = false;
-    let isDirty = true;
-    let lastInteractionTime = performance.now();
-    let lastFrameTime = performance.now();
 
     const TARGET_FRAME_MS = 1000 / 60; // 60fps target during interaction
     const LOW_POWER_FRAME_MS = 1000 / 30; // 30fps low-power pacing for subtle breath
