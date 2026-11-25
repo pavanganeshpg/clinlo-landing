@@ -360,6 +360,14 @@
       color: #0284c7;
       border-color: #38bdf8;
     }
+    .btn-sound-toggle.sound-pending {
+      color: #0284c7;
+      border-color: #0ea5e9;
+      box-shadow:
+        0 0 0 2px rgba(14, 165, 233, 0.16),
+        0 4px 16px rgba(14, 165, 233, 0.22),
+        inset 0 1px 1.5px rgba(255, 255, 255, 1);
+    }
     .btn-sound-toggle.sound-playing {
       color: #0284c7;
       border-color: #0284c7;
@@ -2151,6 +2159,10 @@
               <line x1="23" y1="9" x2="17" y2="15"></line>
               <line x1="17" y1="9" x2="23" y2="15"></line>
             </svg>
+            <svg class="sound-icon-pending" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="none"></polygon>
+              <circle cx="17.5" cy="12" r="2" fill="#0284c7" stroke="none"></circle>
+            </svg>
             <svg class="sound-icon-active" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="none"></polygon>
               <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -2198,6 +2210,10 @@
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="none"></polygon>
                 <line x1="23" y1="9" x2="17" y2="15"></line>
                 <line x1="17" y1="9" x2="23" y2="15"></line>
+              </svg>
+              <svg class="sound-icon-pending" style="display:none;" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="none"></polygon>
+                <circle cx="17.5" cy="12" r="2" fill="#0284c7" stroke="none"></circle>
               </svg>
               <svg class="sound-icon-active" style="display:none;" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="none"></polygon>
@@ -2312,7 +2328,7 @@
           <!-- Live Site View Counter Banner -->
           <div class="live-views-banner" id="live-views-container">
             <span class="live-status-dot"></span>
-            <span class="views-metric"><strong id="site-views-counter">2,044</strong> Site Visitors</span>
+            <span class="views-metric"><strong id="site-views-counter">2,156</strong> Site Visitors</span>
             <span class="views-divider">•</span>
             <span class="views-subtext">CLINLO Wellness Center Pre-Orders Live</span>
           </div>
@@ -2611,7 +2627,11 @@
       const iframe = document.getElementById('clinlo-3d-frame');
       const poster = document.getElementById('clinlo-3d-poster');
       const launchLabel = document.querySelector('#btn-launch-3d span');
-      if (fromUserAction && audioOwner === 'parent' && !userManuallyMuted && !isSoundPlaying) {
+      if (fromUserAction && !userManuallyMuted && !isSoundPlaying) {
+        if (audioOwner === 'child') {
+          audioOwner = 'parent';
+          notifyChildAudioOwner('parent', false);
+        }
         setAmbientSoundState(true, false, true);
       }
       if (!iframe) return;
@@ -3436,6 +3456,7 @@ Please confirm onboarding schedule and founding membership reservation.`
           frame.contentWindow.postMessage({
             type: 'CLINLO_AUDIO_SYNC',
             playing: !!isPlaying,
+            pending: !isPlaying && !userManuallyMuted,
             userMuted: !!userManuallyMuted,
             owner: audioOwner,
             parentGestureFailed: !!parentGestureFailed
@@ -3453,7 +3474,9 @@ Please confirm onboarding schedule and founding membership reservation.`
           frame.contentWindow.postMessage({
             type: 'CLINLO_AUDIO_OWNER',
             owner: owner,
-            playing: !!playing
+            playing: !!playing,
+            pending: !playing && !userManuallyMuted,
+            userMuted: !!userManuallyMuted
           }, '*');
         }
       } catch (e) {}
@@ -3501,7 +3524,7 @@ Please confirm onboarding schedule and founding membership reservation.`
     }
 
     function handleFirstGestureAudioUnlock(event) {
-      if (event && (event.type === 'pointerdown' || event.type === 'pointerup') && event.pointerType === 'touch') {
+      if (event && event.type === 'pointerup' && event.pointerType === 'touch') {
         return;
       }
       if (event && event.type === 'touchend' && touchSwipeMoved) {
@@ -3509,23 +3532,27 @@ Please confirm onboarding schedule and founding membership reservation.`
         touchSwipeStart = null;
         return;
       }
-      if (userManuallyMuted || isSoundPlaying || audioOwner === 'child') {
+      if (userManuallyMuted || isSoundPlaying) {
         removeAudioUnlockListeners();
         return;
       }
       if (event && event.target && typeof event.target.closest === 'function' && event.target.closest('.btn-sound-toggle')) {
         return;
       }
+      if (audioOwner === 'child') {
+        audioOwner = 'parent';
+        notifyChildAudioOwner('parent', false);
+      }
       setAmbientSoundState(true, false, true);
     }
 
     function bindAudioUnlockListeners() {
-      if (audioUnlockBound || userManuallyMuted || audioOwner === 'child') return;
+      if (audioUnlockBound || userManuallyMuted || isSoundPlaying) return;
       audioUnlockBound = true;
       ['touchstart', 'touchmove'].forEach((evtName) => {
         window.addEventListener(evtName, handleTouchSwipeTrack, { capture: true, passive: true });
       });
-      ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'].forEach((evtName) => {
+      ['pointerup', 'touchend', 'click', 'keydown'].forEach((evtName) => {
         window.addEventListener(evtName, handleFirstGestureAudioUnlock, { capture: true, passive: true });
       });
     }
@@ -3536,7 +3563,7 @@ Please confirm onboarding schedule and founding membership reservation.`
       ['touchstart', 'touchmove'].forEach((evtName) => {
         window.removeEventListener(evtName, handleTouchSwipeTrack, { capture: true });
       });
-      ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'].forEach((evtName) => {
+      ['pointerup', 'touchend', 'click', 'keydown'].forEach((evtName) => {
         window.removeEventListener(evtName, handleFirstGestureAudioUnlock, { capture: true });
       });
     }
@@ -3672,24 +3699,36 @@ Please confirm onboarding schedule and founding membership reservation.`
     }
 
     function updateSoundUI(isPlaying) {
+      const isPending = !isPlaying && !userManuallyMuted;
       const toggles = document.querySelectorAll('.btn-sound-toggle');
       toggles.forEach(btn => {
         const iconMuted = btn.querySelector('.sound-icon-muted');
+        const iconPending = btn.querySelector('.sound-icon-pending');
         const iconActive = btn.querySelector('.sound-icon-active');
         if (isPlaying) {
-          btn.classList.remove('muted');
+          btn.classList.remove('muted', 'sound-pending');
           btn.classList.add('sound-playing');
           btn.setAttribute('aria-label', 'Mute Ambient Sound');
           btn.setAttribute('title', 'Sound On (Click to Mute)');
           if (iconMuted) iconMuted.style.display = 'none';
+          if (iconPending) iconPending.style.display = 'none';
           if (iconActive) iconActive.style.display = 'block';
+        } else if (isPending) {
+          btn.classList.remove('muted', 'sound-playing');
+          btn.classList.add('sound-pending');
+          btn.setAttribute('aria-label', 'Resume Ambient Sound (Click or Tap Anywhere)');
+          btn.setAttribute('title', 'Sound On — Click or Tap Anywhere to Resume');
+          if (iconMuted) iconMuted.style.display = 'none';
+          if (iconActive) iconActive.style.display = 'none';
+          if (iconPending) iconPending.style.display = 'block';
         } else {
           btn.classList.add('muted');
-          btn.classList.remove('sound-playing');
+          btn.classList.remove('sound-playing', 'sound-pending');
           btn.setAttribute('aria-label', 'Unmute Ambient Sound');
           btn.setAttribute('title', 'Sound Off (Click to Play)');
-          if (iconMuted) iconMuted.style.display = 'block';
           if (iconActive) iconActive.style.display = 'none';
+          if (iconPending) iconPending.style.display = 'none';
+          if (iconMuted) iconMuted.style.display = 'block';
         }
       });
     }
@@ -3739,6 +3778,8 @@ Please confirm onboarding schedule and founding membership reservation.`
           isSoundPlaying = !!event.data.playing;
           if (isSoundPlaying || userManuallyMuted) {
             removeAudioUnlockListeners();
+          } else {
+            bindAudioUnlockListeners();
           }
           updateSoundUI(isSoundPlaying);
         } else if (event.data.owner === 'parent') {
@@ -3847,6 +3888,7 @@ Please confirm onboarding schedule and founding membership reservation.`
       } else {
         if (audioOwner === 'child') {
           if (!document.hidden) controlChildAudio(true, false);
+          bindAudioUnlockListeners();
         } else {
           if (!document.hidden) {
             setAmbientSoundState(true, false, false);
@@ -3860,12 +3902,11 @@ Please confirm onboarding schedule and founding membership reservation.`
     document.addEventListener('DOMContentLoaded', () => {
       userManuallyMuted = readStoredSoundMuted();
       desiredAudioPlaying = !userManuallyMuted;
+      updateSoundUI(false);
       // Play ambient background music by default (or automatically on first user gesture if browser blocks initial autoplay)
       if (!userManuallyMuted) {
         setAmbientSoundState(true, false, false);
         bindAudioUnlockListeners();
-      } else {
-        updateSoundUI(false);
       }
       // Check device viewport for progressive 3D mount
       const isMobile = window.innerWidth <= 768 || /Mobi|Android|iPhone/i.test(navigator.userAgent);
