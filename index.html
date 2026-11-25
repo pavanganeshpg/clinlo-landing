@@ -2123,7 +2123,7 @@
   <div class="bg-grid" aria-hidden="true"></div>
 
   <!-- Ambient Audio Element -->
-  <audio id="bg-audio" loop preload="none" src="./audio/Music.mp3"></audio>
+  <audio id="bg-audio" loop preload="metadata" src="./audio/Music.mp3"></audio>
 
   <!-- ==========================================
        HEADER & FLOATING NAVIGATION
@@ -2312,7 +2312,7 @@
           <!-- Live Site View Counter Banner -->
           <div class="live-views-banner" id="live-views-container">
             <span class="live-status-dot"></span>
-            <span class="views-metric"><strong id="site-views-counter">1,899</strong> Site Visitors</span>
+            <span class="views-metric"><strong id="site-views-counter">2,044</strong> Site Visitors</span>
             <span class="views-divider">•</span>
             <span class="views-subtext">CLINLO Wellness Center Pre-Orders Live</span>
           </div>
@@ -2574,6 +2574,7 @@
       }
       postStudioVisibilityToFrame(isStudioVisible);
       postAudioStateToFrame(isSoundPlaying);
+      scheduleAudioPreloadPromotion(true);
     }
 
     function armStudioFallbackTimer() {
@@ -2610,7 +2611,7 @@
       const iframe = document.getElementById('clinlo-3d-frame');
       const poster = document.getElementById('clinlo-3d-poster');
       const launchLabel = document.querySelector('#btn-launch-3d span');
-      if (fromUserAction && !userManuallyMuted && !isSoundPlaying) {
+      if (fromUserAction && audioOwner === 'parent' && !userManuallyMuted && !isSoundPlaying) {
         setAmbientSoundState(true, false, true);
       }
       if (!iframe) return;
@@ -3380,14 +3381,64 @@ Please confirm onboarding schedule and founding membership reservation.`
     // -------------------------------------------------------------
     // AMBIENT AUDIO CONTROLLER (Synced Header, Hero & 3D Studio Mute Toggles)
     // -------------------------------------------------------------
-    function postAudioStateToFrame(isPlaying) {
+    const SOUND_MUTE_STORAGE_KEY = 'clinlo_sound_muted';
+    function readStoredSoundMuted() {
+      try {
+        return window.localStorage.getItem(SOUND_MUTE_STORAGE_KEY) === '1';
+      } catch (e) {
+        return false;
+      }
+    }
+    function writeStoredSoundMuted(muted) {
+      try {
+        window.localStorage.setItem(SOUND_MUTE_STORAGE_KEY, muted ? '1' : '0');
+      } catch (e) {}
+    }
+
+    let isSoundPlaying = false;
+    let userManuallyMuted = readStoredSoundMuted();
+    let desiredAudioPlaying = !userManuallyMuted;
+    let isPlayAttemptInFlight = false;
+    let inFlightFromGesture = false;
+    let latestPlayToken = 0;
+    let audioUnlockBound = false;
+    let audioPreloadPromoted = false;
+    let audioPreloadTimer = null;
+    let audioOwner = 'parent';
+
+    function promoteAudioPreload() {
+      if (audioPreloadPromoted) return;
+      audioPreloadPromoted = true;
+      const audio = document.getElementById('bg-audio');
+      if (!audio) return;
+      audio.preload = 'auto';
+      if (audio.readyState < 2 && audio.paused && !isPlayAttemptInFlight) {
+        try { audio.load(); } catch (e) {}
+      }
+    }
+
+    function scheduleAudioPreloadPromotion(reset = false) {
+      if (audioPreloadPromoted) return;
+      if (audioPreloadTimer) {
+        if (!reset) return;
+        clearTimeout(audioPreloadTimer);
+      }
+      audioPreloadTimer = setTimeout(() => {
+        audioPreloadTimer = null;
+        promoteAudioPreload();
+      }, 1500);
+    }
+
+    function postAudioStateToFrame(isPlaying, parentGestureFailed = false) {
       try {
         const frame = document.getElementById('clinlo-3d-frame');
         if (frame && frame.contentWindow) {
           frame.contentWindow.postMessage({
             type: 'CLINLO_AUDIO_SYNC',
             playing: !!isPlaying,
-            userMuted: !!userManuallyMuted
+            userMuted: !!userManuallyMuted,
+            owner: audioOwner,
+            parentGestureFailed: !!parentGestureFailed
           }, '*');
         }
       } catch (e) {
@@ -3395,15 +3446,70 @@ Please confirm onboarding schedule and founding membership reservation.`
       }
     }
 
-    let isSoundPlaying = false;
-    let desiredAudioPlaying = true;
-    let isPlayAttemptInFlight = false;
-    let latestPlayToken = 0;
-    let userManuallyMuted = false;
-    let audioUnlockBound = false;
+    function notifyChildAudioOwner(owner, playing) {
+      try {
+        const frame = document.getElementById('clinlo-3d-frame');
+        if (frame && frame.contentWindow) {
+          frame.contentWindow.postMessage({
+            type: 'CLINLO_AUDIO_OWNER',
+            owner: owner,
+            playing: !!playing
+          }, '*');
+        }
+      } catch (e) {}
+    }
+
+    function controlChildAudio(shouldPlay, isUserToggle = true) {
+      let handledSync = false;
+      try {
+        const frame = document.getElementById('clinlo-3d-frame');
+        if (frame && frame.contentWindow && typeof frame.contentWindow.setStudioAmbientSoundState === 'function') {
+          frame.contentWindow.setStudioAmbientSoundState(!!shouldPlay, !!isUserToggle, true);
+          handledSync = true;
+        }
+      } catch (e) {}
+      if (!handledSync) {
+        try {
+          const frame = document.getElementById('clinlo-3d-frame');
+          if (frame && frame.contentWindow) {
+            frame.contentWindow.postMessage({
+              type: 'CLINLO_AUDIO_SET',
+              playing: !!shouldPlay,
+              fromUser: !!isUserToggle,
+              fromGesture: true
+            }, '*');
+          }
+        } catch (e) {}
+      }
+    }
+
+    let touchSwipeStart = null;
+    let touchSwipeMoved = false;
+
+    function handleTouchSwipeTrack(event) {
+      if (!event) return;
+      if (event.type === 'touchstart' && event.touches && event.touches.length === 1) {
+        touchSwipeStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+        touchSwipeMoved = false;
+      } else if (event.type === 'touchmove' && touchSwipeStart && event.touches && event.touches.length === 1) {
+        const dx = event.touches[0].clientX - touchSwipeStart.x;
+        const dy = event.touches[0].clientY - touchSwipeStart.y;
+        if ((dx * dx + dy * dy) > 100) {
+          touchSwipeMoved = true;
+        }
+      }
+    }
 
     function handleFirstGestureAudioUnlock(event) {
-      if (userManuallyMuted || isSoundPlaying) {
+      if (event && (event.type === 'pointerdown' || event.type === 'pointerup') && event.pointerType === 'touch') {
+        return;
+      }
+      if (event && event.type === 'touchend' && touchSwipeMoved) {
+        touchSwipeMoved = false;
+        touchSwipeStart = null;
+        return;
+      }
+      if (userManuallyMuted || isSoundPlaying || audioOwner === 'child') {
         removeAudioUnlockListeners();
         return;
       }
@@ -3414,9 +3520,12 @@ Please confirm onboarding schedule and founding membership reservation.`
     }
 
     function bindAudioUnlockListeners() {
-      if (audioUnlockBound || userManuallyMuted) return;
+      if (audioUnlockBound || userManuallyMuted || audioOwner === 'child') return;
       audioUnlockBound = true;
-      ['pointerup', 'touchend', 'click', 'keydown'].forEach((evtName) => {
+      ['touchstart', 'touchmove'].forEach((evtName) => {
+        window.addEventListener(evtName, handleTouchSwipeTrack, { capture: true, passive: true });
+      });
+      ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'].forEach((evtName) => {
         window.addEventListener(evtName, handleFirstGestureAudioUnlock, { capture: true, passive: true });
       });
     }
@@ -3424,7 +3533,10 @@ Please confirm onboarding schedule and founding membership reservation.`
     function removeAudioUnlockListeners() {
       if (!audioUnlockBound) return;
       audioUnlockBound = false;
-      ['pointerup', 'touchend', 'click', 'keydown'].forEach((evtName) => {
+      ['touchstart', 'touchmove'].forEach((evtName) => {
+        window.removeEventListener(evtName, handleTouchSwipeTrack, { capture: true });
+      });
+      ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'].forEach((evtName) => {
         window.removeEventListener(evtName, handleFirstGestureAudioUnlock, { capture: true });
       });
     }
@@ -3432,7 +3544,26 @@ Please confirm onboarding schedule and founding membership reservation.`
     function toggleAmbientSound() {
       const audio = document.getElementById('bg-audio');
       if (!audio) return;
-      setAmbientSoundState(!isSoundPlaying, true, true);
+      if (audioOwner === 'child') {
+        if (isSoundPlaying) {
+          userManuallyMuted = true;
+          writeStoredSoundMuted(true);
+          desiredAudioPlaying = false;
+          isSoundPlaying = false;
+          updateSoundUI(false);
+          controlChildAudio(false, true);
+        } else {
+          audioOwner = 'parent';
+          notifyChildAudioOwner('parent', false);
+          setAmbientSoundState(true, true, true);
+        }
+        return;
+      }
+      if (!isSoundPlaying || audio.paused || isPlayAttemptInFlight) {
+        setAmbientSoundState(true, true, true);
+      } else {
+        setAmbientSoundState(false, true, true);
+      }
     }
 
     function setAmbientSoundState(shouldPlay, isUserToggle = true, fromGesture = false) {
@@ -3440,25 +3571,52 @@ Please confirm onboarding schedule and founding membership reservation.`
       if (!audio) return;
       desiredAudioPlaying = !!shouldPlay;
       if (shouldPlay) {
-        if (isUserToggle) userManuallyMuted = false;
+        if (isUserToggle) {
+          userManuallyMuted = false;
+          writeStoredSoundMuted(false);
+        }
         if (userManuallyMuted) return;
-        if (!fromGesture && !isUserToggle && (isPlayAttemptInFlight || (!audio.paused && isSoundPlaying))) return;
+        if (audioOwner === 'child') {
+          if (isUserToggle) {
+            audioOwner = 'parent';
+            notifyChildAudioOwner('parent', false);
+          } else {
+            return;
+          }
+        }
         if (isSoundPlaying && !audio.paused) return;
+        if (document.hidden && !fromGesture && !isUserToggle) {
+          audio.dataset.wasPlaying = 'true';
+          return;
+        }
+        if (isPlayAttemptInFlight && !audio.paused && (inFlightFromGesture || !fromGesture)) return;
+
         audio.volume = 0.72;
         audio.muted = false;
         isPlayAttemptInFlight = true;
+        inFlightFromGesture = !!fromGesture;
         const myToken = ++latestPlayToken;
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise.then(() => {
             if (myToken !== latestPlayToken) return;
             isPlayAttemptInFlight = false;
-            if (!desiredAudioPlaying || userManuallyMuted) {
-              audio.pause();
-              audio.muted = true;
-              isSoundPlaying = false;
-              updateSoundUI(false);
-              postAudioStateToFrame(false);
+            inFlightFromGesture = false;
+            if (!desiredAudioPlaying || userManuallyMuted || audioOwner === 'child' || document.hidden || audio.paused) {
+              const pausedForHidden = document.hidden && desiredAudioPlaying && !userManuallyMuted && audioOwner === 'parent';
+              if (!audio.paused) {
+                audio.pause();
+              }
+              if (pausedForHidden) {
+                audio.dataset.wasPlaying = 'true';
+              } else {
+                audio.muted = true;
+              }
+              if (audioOwner === 'parent') {
+                isSoundPlaying = false;
+                updateSoundUI(false);
+                postAudioStateToFrame(false);
+              }
               return;
             }
             isSoundPlaying = true;
@@ -3468,31 +3626,48 @@ Please confirm onboarding schedule and founding membership reservation.`
           }).catch(err => {
             if (myToken !== latestPlayToken) return;
             isPlayAttemptInFlight = false;
+            inFlightFromGesture = false;
             console.debug('Audio autoplay pending user gesture:', err);
+            if (!audio.paused) {
+              try { audio.pause(); } catch (e) {}
+            }
             isSoundPlaying = false;
             updateSoundUI(false);
-            postAudioStateToFrame(false);
-            if (!userManuallyMuted) bindAudioUnlockListeners();
+            postAudioStateToFrame(false, !!fromGesture);
+            if (!userManuallyMuted && !document.hidden) bindAudioUnlockListeners();
           });
         } else {
           isPlayAttemptInFlight = false;
-          isSoundPlaying = true;
-          removeAudioUnlockListeners();
-          updateSoundUI(true);
-          postAudioStateToFrame(true);
+          inFlightFromGesture = false;
+          isSoundPlaying = !audio.paused;
+          if (isSoundPlaying) {
+            removeAudioUnlockListeners();
+            updateSoundUI(true);
+            postAudioStateToFrame(true);
+          } else {
+            updateSoundUI(false);
+            postAudioStateToFrame(false, !!fromGesture);
+          }
         }
       } else {
         latestPlayToken++;
         isPlayAttemptInFlight = false;
+        inFlightFromGesture = false;
         if (isUserToggle) {
           userManuallyMuted = true;
+          writeStoredSoundMuted(true);
           removeAudioUnlockListeners();
         }
         isSoundPlaying = false;
         audio.pause();
         audio.muted = true;
+        audio.dataset.wasPlaying = 'false';
         updateSoundUI(false);
-        postAudioStateToFrame(false);
+        if (audioOwner === 'child') {
+          controlChildAudio(false, isUserToggle);
+        } else {
+          postAudioStateToFrame(false);
+        }
       }
     }
 
@@ -3519,6 +3694,9 @@ Please confirm onboarding schedule and founding membership reservation.`
       });
     }
 
+    window.toggleAmbientSound = toggleAmbientSound;
+    window.setAmbientSoundState = setAmbientSoundState;
+
     // Bidirectional postMessage listener for 3D studio frame
     window.addEventListener('message', (event) => {
       if (!event.data) return;
@@ -3533,7 +3711,7 @@ Please confirm onboarding schedule and founding membership reservation.`
       } else if (event.data.type === 'CLINLO_AUDIO_TOGGLE') {
         toggleAmbientSound();
       } else if (event.data.type === 'CLINLO_AUDIO_UNLOCK') {
-        if (!userManuallyMuted && !isSoundPlaying) {
+        if (audioOwner === 'parent' && !userManuallyMuted && !isSoundPlaying) {
           setAmbientSoundState(true, false, true);
         }
       } else if (event.data.type === 'CLINLO_AUDIO_SET') {
@@ -3542,6 +3720,30 @@ Please confirm onboarding schedule and founding membership reservation.`
         setAmbientSoundState(!!event.data.playing, fromUser, fromGesture);
       } else if (event.data.type === 'CLINLO_AUDIO_REQUEST_STATE') {
         postAudioStateToFrame(isSoundPlaying);
+      } else if (event.data.type === 'CLINLO_AUDIO_OWNER') {
+        if (event.data.owner === 'child') {
+          audioOwner = 'child';
+          latestPlayToken++;
+          isPlayAttemptInFlight = false;
+          inFlightFromGesture = false;
+          const audio = document.getElementById('bg-audio');
+          if (audio) {
+            audio.pause();
+            audio.muted = true;
+            audio.dataset.wasPlaying = 'false';
+          }
+          if (typeof event.data.userMuted === 'boolean') {
+            userManuallyMuted = event.data.userMuted;
+            desiredAudioPlaying = !userManuallyMuted;
+          }
+          isSoundPlaying = !!event.data.playing;
+          if (isSoundPlaying || userManuallyMuted) {
+            removeAudioUnlockListeners();
+          }
+          updateSoundUI(isSoundPlaying);
+        } else if (event.data.owner === 'parent') {
+          audioOwner = 'parent';
+        }
       }
     });
 
@@ -3553,27 +3755,118 @@ Please confirm onboarding schedule and founding membership reservation.`
       });
     }
 
+    const bgAudioEl = document.getElementById('bg-audio');
+    if (bgAudioEl) {
+      bgAudioEl.addEventListener('pause', () => {
+        if (audioOwner !== 'parent') return;
+        if (!document.hidden && !isPlayAttemptInFlight && isSoundPlaying) {
+          isSoundPlaying = false;
+          updateSoundUI(false);
+          postAudioStateToFrame(false);
+          if (!userManuallyMuted) bindAudioUnlockListeners();
+        }
+      });
+    }
+
     document.addEventListener('visibilitychange', () => {
       const audio = document.getElementById('bg-audio');
       if (!audio) return;
       if (document.hidden) {
-        if (!audio.paused) {
-          audio.pause();
+        if (audioOwner === 'child') {
+          try {
+            const frame = document.getElementById('clinlo-3d-frame');
+            if (frame && frame.contentWindow) {
+              frame.contentWindow.postMessage({ type: 'CLINLO_AUDIO_HOST_VISIBILITY', hidden: true }, '*');
+            }
+          } catch (e) {}
+          return;
+        }
+        if (!audio.paused || isPlayAttemptInFlight) {
+          latestPlayToken++;
+          isPlayAttemptInFlight = false;
+          inFlightFromGesture = false;
+          if (!audio.paused) {
+            audio.pause();
+          }
           audio.dataset.wasPlaying = 'true';
+          isSoundPlaying = false;
+          updateSoundUI(false);
+          postAudioStateToFrame(false);
         }
       } else {
-        if (audio.dataset.wasPlaying === 'true' && !userManuallyMuted) {
+        userManuallyMuted = readStoredSoundMuted();
+        desiredAudioPlaying = !userManuallyMuted;
+        if (audioOwner === 'child') {
+          try {
+            const frame = document.getElementById('clinlo-3d-frame');
+            if (frame && frame.contentWindow) {
+              frame.contentWindow.postMessage({ type: 'CLINLO_AUDIO_HOST_VISIBILITY', hidden: false }, '*');
+            }
+          } catch (e) {}
+          return;
+        }
+        if (!userManuallyMuted && (audio.dataset.wasPlaying === 'true' || desiredAudioPlaying)) {
           audio.dataset.wasPlaying = 'false';
-          setAmbientSoundState(true, false);
+          setAmbientSoundState(true, false, false);
+        }
+      }
+    });
+
+    window.addEventListener('pageshow', (event) => {
+      if (!event || !event.persisted) return;
+      userManuallyMuted = readStoredSoundMuted();
+      desiredAudioPlaying = !userManuallyMuted;
+      if (userManuallyMuted) {
+        removeAudioUnlockListeners();
+        setAmbientSoundState(false, false, false);
+        return;
+      }
+      const audio = document.getElementById('bg-audio');
+      if (audioOwner === 'parent' && audio && audio.paused && !document.hidden) {
+        setAmbientSoundState(true, false, false);
+        bindAudioUnlockListeners();
+      } else if (audioOwner === 'child') {
+        postAudioStateToFrame(isSoundPlaying);
+      }
+    });
+
+    window.addEventListener('storage', (event) => {
+      if (event.key !== SOUND_MUTE_STORAGE_KEY && event.key !== null) return;
+      const nextMuted = (event.key === null) ? false : (event.newValue === '1');
+      userManuallyMuted = nextMuted;
+      desiredAudioPlaying = !nextMuted;
+      if (nextMuted) {
+        removeAudioUnlockListeners();
+        if (audioOwner === 'child') {
+          isSoundPlaying = false;
+          updateSoundUI(false);
+          controlChildAudio(false, false);
+        } else {
+          setAmbientSoundState(false, false, false);
+        }
+      } else {
+        if (audioOwner === 'child') {
+          if (!document.hidden) controlChildAudio(true, false);
+        } else {
+          if (!document.hidden) {
+            setAmbientSoundState(true, false, false);
+          }
+          bindAudioUnlockListeners();
         }
       }
     });
 
     // Adaptive initialization
     document.addEventListener('DOMContentLoaded', () => {
+      userManuallyMuted = readStoredSoundMuted();
+      desiredAudioPlaying = !userManuallyMuted;
       // Play ambient background music by default (or automatically on first user gesture if browser blocks initial autoplay)
-      setAmbientSoundState(true, false);
-      bindAudioUnlockListeners();
+      if (!userManuallyMuted) {
+        setAmbientSoundState(true, false, false);
+        bindAudioUnlockListeners();
+      } else {
+        updateSoundUI(false);
+      }
       // Check device viewport for progressive 3D mount
       const isMobile = window.innerWidth <= 768 || /Mobi|Android|iPhone/i.test(navigator.userAgent);
       if (!isMobile) {
@@ -3587,6 +3880,10 @@ Please confirm onboarding schedule and founding membership reservation.`
       document.querySelectorAll('a[href="#interactive-3d"]').forEach(link => {
         link.addEventListener('click', () => mountInteractive3D(true));
       });
+
+      window.addEventListener('load', () => {
+        scheduleAudioPreloadPromotion(false);
+      }, { once: true });
 
       // PWA Service Worker Registration for Instant Zero-Latency 3D Asset Streaming
       if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {

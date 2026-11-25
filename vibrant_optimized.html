@@ -2099,20 +2099,89 @@
   <script>
     // Default Ambient Sound Engine (non-module synchronous init so parent <-> iframe
     // audio sync & button controls work immediately even while 3D ES modules/GLBs load)
+    const SOUND_MUTE_STORAGE_KEY = 'clinlo_sound_muted';
+    function readStoredSoundMuted() {
+      try {
+        return window.localStorage.getItem(SOUND_MUTE_STORAGE_KEY) === '1';
+      } catch (e) {
+        return false;
+      }
+    }
+    function writeStoredSoundMuted(muted) {
+      try {
+        window.localStorage.setItem(SOUND_MUTE_STORAGE_KEY, muted ? '1' : '0');
+      } catch (e) {}
+    }
+
     let studioAudio = null;
     let isStudioAudioPlaying = false;
     let isStudioPlayInFlight = false;
+    let isStudioGesturePlayInFlight = false;
     let latestStudioPlayToken = 0;
-    let userManuallyMuted = false;
+    let userManuallyMuted = readStoredSoundMuted();
+    let desiredStudioAudioPlaying = !userManuallyMuted;
+    let studioUnlockBound = false;
+    let studioAudioPreloadPromoted = false;
+    let studioAudioPreloadTimer = null;
+    let studioAudioOwner = 'parent';
+    let parentAutoplayRejected = false;
     const isEmbeddedInIframe = (window.self !== window.top);
 
     function initStudioAudio() {
       if (!studioAudio) {
         studioAudio = new Audio('./audio/Music.mp3');
-        studioAudio.preload = 'none';
+        studioAudio.preload = 'metadata';
         studioAudio.loop = true;
-        studioAudio.volume = isEmbeddedInIframe ? 0 : 0.72;
+        studioAudio.volume = (isEmbeddedInIframe && studioAudioOwner !== 'child') ? 0 : 0.72;
+        studioAudio.addEventListener('pause', () => {
+          if (isEmbeddedInIframe && studioAudioOwner !== 'child') return;
+          if (!document.hidden && !isStudioPlayInFlight && isStudioAudioPlaying) {
+            isStudioAudioPlaying = false;
+            updateStudioSoundUI(false);
+            if (isEmbeddedInIframe && studioAudioOwner === 'child') {
+              notifyParentAudioOwner('child', false);
+            }
+            if (!userManuallyMuted) bindStudioUnlockListeners();
+          }
+        });
       }
+    }
+
+    function promoteStudioAudioPreload() {
+      if (studioAudioPreloadPromoted) return;
+      if (isEmbeddedInIframe && studioAudioOwner === 'parent') return;
+      studioAudioPreloadPromoted = true;
+      initStudioAudio();
+      if (!studioAudio) return;
+      studioAudio.preload = 'auto';
+      if (studioAudio.readyState < 2 && studioAudio.paused && !isStudioPlayInFlight) {
+        try { studioAudio.load(); } catch (e) {}
+      }
+    }
+
+    function scheduleStudioAudioPreloadPromotion(reset = false) {
+      if (studioAudioPreloadPromoted) return;
+      if (isEmbeddedInIframe && studioAudioOwner === 'parent') return;
+      if (studioAudioPreloadTimer) {
+        if (!reset) return;
+        clearTimeout(studioAudioPreloadTimer);
+      }
+      studioAudioPreloadTimer = setTimeout(() => {
+        studioAudioPreloadTimer = null;
+        promoteStudioAudioPreload();
+      }, 1500);
+    }
+
+    function notifyParentAudioOwner(owner, playing) {
+      if (!isEmbeddedInIframe) return;
+      try {
+        window.parent.postMessage({
+          type: 'CLINLO_AUDIO_OWNER',
+          owner: owner,
+          playing: !!playing,
+          userMuted: !!userManuallyMuted
+        }, '*');
+      } catch (e) {}
     }
 
     function updateStudioSoundUI(playing) {
@@ -2137,113 +2206,394 @@
       }
     }
 
+    function setStudioAmbientSoundState(shouldPlay, isUserToggle = true, fromGesture = false) {
+      desiredStudioAudioPlaying = !!shouldPlay;
+      if (shouldPlay) {
+        if (isUserToggle) {
+          userManuallyMuted = false;
+          writeStoredSoundMuted(false);
+        }
+        if (userManuallyMuted) return;
+        initStudioAudio();
+        if (!studioAudio) return;
+        if (isStudioAudioPlaying && !studioAudio.paused) return;
+        if (document.hidden && !fromGesture && !isUserToggle) {
+          studioAudio.dataset.wasPlaying = 'true';
+          return;
+        }
+        if (isStudioPlayInFlight && !studioAudio.paused && (isStudioGesturePlayInFlight || !fromGesture)) return;
+
+        studioAudio.volume = 0.72;
+        studioAudio.muted = false;
+        isStudioPlayInFlight = true;
+        isStudioGesturePlayInFlight = !!fromGesture;
+        const myToken = ++latestStudioPlayToken;
+        const playPromise = studioAudio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            if (myToken !== latestStudioPlayToken) return;
+            isStudioPlayInFlight = false;
+            isStudioGesturePlayInFlight = false;
+            if (!desiredStudioAudioPlaying || userManuallyMuted || document.hidden || studioAudio.paused) {
+              const pausedForHidden = document.hidden && desiredStudioAudioPlaying && !userManuallyMuted;
+              if (!studioAudio.paused) {
+                studioAudio.pause();
+              }
+              if (pausedForHidden) {
+                studioAudio.dataset.wasPlaying = 'true';
+              } else {
+                studioAudio.muted = true;
+              }
+              isStudioAudioPlaying = false;
+              updateStudioSoundUI(false);
+              if (isEmbeddedInIframe && studioAudioOwner === 'child') {
+                notifyParentAudioOwner('child', false);
+              }
+              return;
+            }
+            if (isEmbeddedInIframe) {
+              studioAudioOwner = 'child';
+              notifyParentAudioOwner('child', true);
+            }
+            isStudioAudioPlaying = true;
+            removeStudioUnlockListeners();
+            updateStudioSoundUI(true);
+          }).catch(() => {
+            if (myToken !== latestStudioPlayToken) return;
+            isStudioPlayInFlight = false;
+            isStudioGesturePlayInFlight = false;
+            isStudioAudioPlaying = false;
+            updateStudioSoundUI(false);
+            if (!userManuallyMuted && !document.hidden) bindStudioUnlockListeners();
+          });
+        } else {
+          isStudioPlayInFlight = false;
+          isStudioGesturePlayInFlight = false;
+          if (isEmbeddedInIframe) {
+            studioAudioOwner = 'child';
+            notifyParentAudioOwner('child', true);
+          }
+          isStudioAudioPlaying = true;
+          removeStudioUnlockListeners();
+          updateStudioSoundUI(true);
+        }
+      } else {
+        latestStudioPlayToken++;
+        isStudioPlayInFlight = false;
+        isStudioGesturePlayInFlight = false;
+        if (isUserToggle) {
+          userManuallyMuted = true;
+          writeStoredSoundMuted(true);
+          removeStudioUnlockListeners();
+        }
+        isStudioAudioPlaying = false;
+        if (studioAudio) {
+          studioAudio.pause();
+          studioAudio.muted = true;
+          studioAudio.dataset.wasPlaying = 'false';
+        }
+        updateStudioSoundUI(false);
+        if (isEmbeddedInIframe && studioAudioOwner === 'child') {
+          notifyParentAudioOwner('child', false);
+        }
+      }
+    }
+
     function toggleStudioSound() {
-      if (isEmbeddedInIframe) {
+      if (isEmbeddedInIframe && studioAudioOwner !== 'child') {
+        if (parentAutoplayRejected && !isStudioAudioPlaying) {
+          setStudioAmbientSoundState(true, true, true);
+          return;
+        }
+        let handledByParent = false;
         try {
-          window.parent.postMessage({ type: 'CLINLO_AUDIO_TOGGLE' }, '*');
-        } catch (e) {
-          console.warn('PostMessage to parent failed:', e);
+          if (window.parent && typeof window.parent.toggleAmbientSound === 'function') {
+            window.parent.toggleAmbientSound();
+            handledByParent = true;
+          }
+        } catch (e) {}
+        if (!handledByParent) {
+          try {
+            window.parent.postMessage({ type: 'CLINLO_AUDIO_TOGGLE' }, '*');
+          } catch (e) {
+            console.warn('PostMessage to parent failed:', e);
+          }
+          // If parent is unreachable (cross-origin), unlock local child audio directly inside gesture
+          if (!isStudioAudioPlaying) {
+            setStudioAmbientSoundState(true, true, true);
+          }
         }
         return;
       }
       initStudioAudio();
       if (!studioAudio) return;
-      if (studioAudio.paused) {
-        userManuallyMuted = false;
-        studioAudio.play().then(() => {
-          isStudioAudioPlaying = true;
-          updateStudioSoundUI(true);
-        }).catch(err => {
-          console.warn('Audio play prevented:', err);
-          updateStudioSoundUI(false);
-        });
+      if (!isStudioAudioPlaying || studioAudio.paused || isStudioPlayInFlight) {
+        setStudioAmbientSoundState(true, true, true);
       } else {
-        userManuallyMuted = true;
-        studioAudio.pause();
-        isStudioAudioPlaying = false;
-        updateStudioSoundUI(false);
+        setStudioAmbientSoundState(false, true, true);
       }
     }
 
     function startAmbientSound(fromGesture = false) {
       if (userManuallyMuted) return;
-      if (isEmbeddedInIframe) {
-        try {
-          window.parent.postMessage({ type: 'CLINLO_AUDIO_SET', playing: true, fromUser: false, fromGesture: !!fromGesture }, '*');
-        } catch (e) { }
-        return;
-      }
-      initStudioAudio();
-      if (!studioAudio) return;
-      if (!fromGesture && (isStudioPlayInFlight || (!studioAudio.paused && isStudioAudioPlaying))) return;
-      if (isStudioAudioPlaying && !studioAudio.paused) return;
-      isStudioPlayInFlight = true;
-      const myToken = ++latestStudioPlayToken;
-      studioAudio.volume = 0.72;
-      studioAudio.muted = false;
-      studioAudio.play().then(() => {
-        if (myToken !== latestStudioPlayToken) return;
-        isStudioPlayInFlight = false;
-        if (userManuallyMuted) {
-          studioAudio.pause();
-          isStudioAudioPlaying = false;
-          updateStudioSoundUI(false);
+      if (isEmbeddedInIframe && studioAudioOwner !== 'child') {
+        if (fromGesture && parentAutoplayRejected) {
+          setStudioAmbientSoundState(true, false, true);
           return;
         }
-        isStudioAudioPlaying = true;
-        updateStudioSoundUI(true);
-      }).catch(() => {
-        if (myToken !== latestStudioPlayToken) return;
-        isStudioPlayInFlight = false;
-        isStudioAudioPlaying = false;
-        updateStudioSoundUI(false);
-      });
+        let handledByParent = false;
+        try {
+          if (window.parent && typeof window.parent.setAmbientSoundState === 'function') {
+            window.parent.setAmbientSoundState(true, false, !!fromGesture);
+            handledByParent = true;
+          }
+        } catch (e) {}
+        if (!handledByParent) {
+          try {
+            window.parent.postMessage({ type: 'CLINLO_AUDIO_SET', playing: true, fromUser: false, fromGesture: !!fromGesture }, '*');
+          } catch (e) {}
+          if (fromGesture) {
+            setStudioAmbientSoundState(true, false, true);
+          }
+        }
+        return;
+      }
+      setStudioAmbientSoundState(true, false, fromGesture);
+    }
+
+    let studioTouchSwipeStart = null;
+    let studioTouchSwipeMoved = false;
+
+    function handleStudioTouchSwipeTrack(event) {
+      if (!event) return;
+      if (event.type === 'touchstart' && event.touches && event.touches.length === 1) {
+        studioTouchSwipeStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+        studioTouchSwipeMoved = false;
+      } else if (event.type === 'touchmove' && studioTouchSwipeStart && event.touches && event.touches.length === 1) {
+        const dx = event.touches[0].clientX - studioTouchSwipeStart.x;
+        const dy = event.touches[0].clientY - studioTouchSwipeStart.y;
+        if ((dx * dx + dy * dy) > 100) {
+          studioTouchSwipeMoved = true;
+        }
+      }
     }
 
     function handleStudioFirstGesture(event) {
-      if (userManuallyMuted || isStudioAudioPlaying) return;
+      if (event && (event.type === 'pointerdown' || event.type === 'pointerup') && event.pointerType === 'touch') {
+        return;
+      }
+      if (event && event.type === 'touchend' && studioTouchSwipeMoved) {
+        studioTouchSwipeMoved = false;
+        studioTouchSwipeStart = null;
+        return;
+      }
+      if (userManuallyMuted || isStudioAudioPlaying) {
+        removeStudioUnlockListeners();
+        return;
+      }
       if (event && event.target && typeof event.target.closest === 'function' && event.target.closest('#studio-sound-toggle')) {
         return;
       }
-      if (isEmbeddedInIframe) {
+      if (isEmbeddedInIframe && studioAudioOwner !== 'child') {
+        if (parentAutoplayRejected) {
+          setStudioAmbientSoundState(true, false, true);
+          return;
+        }
+        let handledByParent = false;
         try {
-          window.parent.postMessage({ type: 'CLINLO_AUDIO_UNLOCK' }, '*');
-        } catch (e) { }
+          if (window.parent && typeof window.parent.setAmbientSoundState === 'function') {
+            window.parent.setAmbientSoundState(true, false, true);
+            handledByParent = true;
+          }
+        } catch (e) {}
+        if (!handledByParent) {
+          try {
+            window.parent.postMessage({ type: 'CLINLO_AUDIO_UNLOCK' }, '*');
+          } catch (e) {}
+          setStudioAmbientSoundState(true, false, true);
+        }
       } else {
-        startAmbientSound(true);
+        setStudioAmbientSoundState(true, false, true);
       }
     }
 
-    ['pointerup', 'touchend', 'click', 'keydown'].forEach((evtName) => {
-      window.addEventListener(evtName, handleStudioFirstGesture, { capture: true, passive: true });
-    });
+    function bindStudioUnlockListeners() {
+      if (studioUnlockBound || userManuallyMuted) return;
+      studioUnlockBound = true;
+      ['touchstart', 'touchmove'].forEach((evtName) => {
+        window.addEventListener(evtName, handleStudioTouchSwipeTrack, { capture: true, passive: true });
+      });
+      ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'].forEach((evtName) => {
+        window.addEventListener(evtName, handleStudioFirstGesture, { capture: true, passive: true });
+      });
+    }
+
+    function removeStudioUnlockListeners() {
+      if (!studioUnlockBound) return;
+      studioUnlockBound = false;
+      ['touchstart', 'touchmove'].forEach((evtName) => {
+        window.removeEventListener(evtName, handleStudioTouchSwipeTrack, { capture: true });
+      });
+      ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'].forEach((evtName) => {
+        window.removeEventListener(evtName, handleStudioFirstGesture, { capture: true });
+      });
+    }
+
+    if (!userManuallyMuted) {
+      bindStudioUnlockListeners();
+    }
 
     if (!isEmbeddedInIframe) {
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => startAmbientSound(false), { once: true });
+        document.addEventListener('DOMContentLoaded', () => setStudioAmbientSoundState(true, false, false), { once: true });
       } else {
-        startAmbientSound(false);
+        setStudioAmbientSoundState(true, false, false);
       }
+      window.addEventListener('load', () => scheduleStudioAudioPreloadPromotion(false), { once: true });
     }
+
+    window.addEventListener('pageshow', (event) => {
+      if (!event || !event.persisted) return;
+      userManuallyMuted = readStoredSoundMuted();
+      desiredStudioAudioPlaying = !userManuallyMuted;
+      if (userManuallyMuted) {
+        removeStudioUnlockListeners();
+        if (!isEmbeddedInIframe || studioAudioOwner === 'child') {
+          setStudioAmbientSoundState(false, false, false);
+        }
+        return;
+      }
+      if ((!isEmbeddedInIframe || studioAudioOwner === 'child') && (!studioAudio || studioAudio.paused) && !document.hidden) {
+        setStudioAmbientSoundState(true, false, false);
+        bindStudioUnlockListeners();
+      }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (isEmbeddedInIframe && studioAudioOwner !== 'child') return;
+      if (document.hidden) {
+        if (studioAudio && (!studioAudio.paused || isStudioPlayInFlight)) {
+          latestStudioPlayToken++;
+          isStudioPlayInFlight = false;
+          isStudioGesturePlayInFlight = false;
+          if (!studioAudio.paused) {
+            studioAudio.pause();
+          }
+          studioAudio.dataset.wasPlaying = 'true';
+          isStudioAudioPlaying = false;
+          updateStudioSoundUI(false);
+          if (isEmbeddedInIframe && studioAudioOwner === 'child') {
+            notifyParentAudioOwner('child', false);
+          }
+        }
+      } else {
+        userManuallyMuted = readStoredSoundMuted();
+        desiredStudioAudioPlaying = !userManuallyMuted;
+        if (!userManuallyMuted && ((studioAudio && studioAudio.dataset.wasPlaying === 'true') || desiredStudioAudioPlaying)) {
+          if (studioAudio) studioAudio.dataset.wasPlaying = 'false';
+          setStudioAmbientSoundState(true, false, false);
+        }
+      }
+    });
+
+    window.addEventListener('storage', (event) => {
+      if (event.key !== SOUND_MUTE_STORAGE_KEY && event.key !== null) return;
+      const nextMuted = (event.key === null) ? false : (event.newValue === '1');
+      userManuallyMuted = nextMuted;
+      desiredStudioAudioPlaying = !nextMuted;
+      if (isEmbeddedInIframe && studioAudioOwner !== 'child') {
+        if (nextMuted) {
+          removeStudioUnlockListeners();
+          isStudioAudioPlaying = false;
+          updateStudioSoundUI(false);
+        }
+        return;
+      }
+      if (nextMuted) {
+        removeStudioUnlockListeners();
+        setStudioAmbientSoundState(false, false, false);
+      } else {
+        if (!document.hidden) {
+          setStudioAmbientSoundState(true, false, false);
+        }
+        bindStudioUnlockListeners();
+      }
+    });
 
     window.toggleStudioSound = toggleStudioSound;
     window.toggleSound = toggleStudioSound;
     window.startAmbientSound = startAmbientSound;
+    window.setStudioAmbientSoundState = setStudioAmbientSoundState;
+    window.scheduleStudioAudioPreloadPromotion = scheduleStudioAudioPreloadPromotion;
 
     window.addEventListener('message', (event) => {
       if (!event.data) return;
       if (event.data.type === 'CLINLO_AUDIO_SYNC') {
-        const playing = !!event.data.playing;
-        isStudioAudioPlaying = playing;
-        if (typeof event.data.userMuted === 'boolean') {
-          userManuallyMuted = event.data.userMuted;
+        if (event.data.owner === 'parent' || event.data.owner === 'child') {
+          studioAudioOwner = event.data.owner;
         }
-        updateStudioSoundUI(playing);
-        if (!isEmbeddedInIframe && studioAudio) {
-          if (playing && studioAudio.paused) {
-            studioAudio.play().catch(() => { });
-          } else if (!playing && !studioAudio.paused) {
+        if (event.data.parentGestureFailed) {
+          parentAutoplayRejected = true;
+        } else if (event.data.playing && studioAudioOwner === 'parent') {
+          parentAutoplayRejected = false;
+        }
+        if (isEmbeddedInIframe && studioAudioOwner === 'parent') {
+          const playing = !!event.data.playing;
+          isStudioAudioPlaying = playing;
+          if (typeof event.data.userMuted === 'boolean') {
+            userManuallyMuted = event.data.userMuted;
+            desiredStudioAudioPlaying = !userManuallyMuted;
+          }
+          updateStudioSoundUI(playing);
+          if (studioAudio && !studioAudio.paused) {
             studioAudio.pause();
+            studioAudio.volume = 0;
+          }
+          if (playing || userManuallyMuted) {
+            removeStudioUnlockListeners();
+          } else {
+            bindStudioUnlockListeners();
+          }
+        }
+      } else if (event.data.type === 'CLINLO_AUDIO_OWNER') {
+        if (event.data.owner === 'parent') {
+          studioAudioOwner = 'parent';
+          latestStudioPlayToken++;
+          isStudioPlayInFlight = false;
+          isStudioGesturePlayInFlight = false;
+          if (studioAudio) {
+            studioAudio.pause();
+            studioAudio.volume = 0;
+            studioAudio.dataset.wasPlaying = 'false';
+          }
+          if (typeof event.data.playing === 'boolean') {
+            isStudioAudioPlaying = event.data.playing;
+            updateStudioSoundUI(isStudioAudioPlaying);
+          }
+        }
+      } else if (event.data.type === 'CLINLO_AUDIO_SET') {
+        if (!isEmbeddedInIframe || studioAudioOwner === 'child') {
+          const fromUser = event.data.fromUser !== false;
+          const fromGesture = event.data.fromGesture === true || fromUser;
+          setStudioAmbientSoundState(!!event.data.playing, fromUser, fromGesture);
+        }
+      } else if (event.data.type === 'CLINLO_AUDIO_HOST_VISIBILITY') {
+        if (isEmbeddedInIframe && studioAudioOwner === 'child') {
+          if (event.data.hidden) {
+            if (studioAudio && !studioAudio.paused) {
+              studioAudio.pause();
+              studioAudio.dataset.wasPlaying = 'true';
+              isStudioAudioPlaying = false;
+              updateStudioSoundUI(false);
+              notifyParentAudioOwner('child', false);
+            }
+          } else {
+            userManuallyMuted = readStoredSoundMuted();
+            desiredStudioAudioPlaying = !userManuallyMuted;
+            if (!userManuallyMuted && (studioAudio?.dataset.wasPlaying === 'true' || desiredStudioAudioPlaying)) {
+              if (studioAudio) studioAudio.dataset.wasPlaying = 'false';
+              setStudioAmbientSoundState(true, false, false);
+            }
           }
         }
       }
@@ -5708,6 +6058,9 @@
         }
 
         window.__clinloStage1Ready = true;
+        if (typeof window.scheduleStudioAudioPreloadPromotion === 'function') {
+          window.scheduleStudioAudioPreloadPromotion(true);
+        }
         if (isEmbeddedInIframe) {
           try {
             window.parent.postMessage({ type: 'CLINLO_3D_READY' }, '*');
