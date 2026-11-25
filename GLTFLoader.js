@@ -64,7 +64,7 @@ import {
 	VectorKeyframeTrack,
 	SRGBColorSpace,
 	InstancedBufferAttribute
-} from './three.module.js';
+} from './three.module.min.js';
 
 function toTrianglesDrawMode( geometry, drawMode ) {
 	if ( drawMode === 0 ) {

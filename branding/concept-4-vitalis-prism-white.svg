@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
-  <title>Concept 4: Vitalis Prism (White)</title>
-  <!-- Left Solid Anchor Wing (Clinical Foundation) -->
-  <path d="M 45.30 48.00 H 75.30 L 115.49 198.00 H 85.49 L 45.30 48.00 Z" fill="#ffffff"/>
-  <!-- Right Ascending Biometric Progress Bars -->
-  <path d="M 125.30 198.00 L 137.36 153.00 H 157.36 L 145.30 198.00 Z" fill="#38bdf8"/>
-  <path d="M 151.30 142.00 L 164.70 92.00 H 184.70 L 171.30 142.00 Z" fill="#38bdf8"/>
-  <path d="M 177.30 82.00 L 190.70 32.00 H 210.70 L 197.30 82.00 Z" fill="#88aafb"/>
-</svg>

@@ -61,10 +61,9 @@
   }
   </script>
 
-  <!-- Typography: Plus Jakarta Sans & Ubuntu Mono -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Typography: Self-hosted Plus Jakarta Sans & Ubuntu Mono (0 external RTT, 0 font-swap CLS) -->
+  <link rel="preload" href="./fonts/PlusJakartaSans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="./fonts/UbuntuMono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 
   <style>
     /* =============================================================
@@ -130,11 +129,55 @@
       --radius-xl: 32px;
       --radius-pill: 9999px;
 
-      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-      --font-mono: 'Ubuntu Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --font-sans: 'Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'Ubuntu Mono', 'Ubuntu Mono Fallback', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       
       --sat: env(safe-area-inset-top, 0px);
       --sab: env(safe-area-inset-bottom, 0px);
+    }
+
+    @font-face {
+      font-family: 'Plus Jakarta Sans';
+      font-style: normal;
+      font-weight: 300 800;
+      font-display: swap;
+      src: url('./fonts/PlusJakartaSans-latin.woff2') format('woff2');
+    }
+
+    @font-face {
+      font-family: 'Ubuntu Mono';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('./fonts/UbuntuMono-400-latin.woff2') format('woff2');
+    }
+
+    @font-face {
+      font-family: 'Ubuntu Mono';
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src: url('./fonts/UbuntuMono-700-latin.woff2') format('woff2');
+    }
+
+    @font-face {
+      font-family: 'Plus Jakarta Sans Fallback';
+      src: local('Roboto'), local('SF Pro Display'), local('Helvetica Neue'), local('Arial');
+      font-weight: 100 900;
+      size-adjust: 103.5%;
+      ascent-override: 95%;
+      descent-override: 22%;
+      line-gap-override: 0%;
+    }
+
+    @font-face {
+      font-family: 'Ubuntu Mono Fallback';
+      src: local('Courier New'), local('Menlo'), local('Consolas');
+      font-weight: 400 700;
+      size-adjust: 92%;
+      ascent-override: 88%;
+      descent-override: 20%;
+      line-gap-override: 0%;
     }
 
     * {
@@ -146,6 +189,7 @@
     html {
       scroll-behavior: smooth;
       font-size: 16px;
+      background-color: #f6fafd;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
@@ -1552,7 +1596,7 @@
       backdrop-filter: blur(28px) saturate(190%);
       -webkit-backdrop-filter: blur(28px) saturate(190%);
       border-top: 1px solid rgba(255, 255, 255, 0.9);
-      padding: 3.5rem 0 2.5rem;
+      padding: 3.5rem 0 calc(2.5rem + var(--sab));
       position: relative;
       z-index: 10;
       box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.9);
@@ -1720,6 +1764,9 @@
         will-change: auto;
         background-position: 35% 50%;
       }
+      .btn-sound-toggle.sound-playing {
+        animation: none;
+      }
       .badge-pill,
       .btn-lg-glass,
       .btn-sound-toggle,
@@ -1754,6 +1801,7 @@
 
       /* 4. Lock 3D viewport height to svh (immune to Android Chrome URL-bar collapse/expand jumps) */
       .studio-viewport-card {
+        scroll-margin-top: 68px;
         height: 430px;
         max-height: none;
         margin-bottom: 3rem;
@@ -1763,6 +1811,10 @@
         .studio-viewport-card {
           height: clamp(370px, 56svh, 450px);
         }
+      }
+      #clinlo-3d-poster {
+        background-image: url('./branding/clinlo_3d_poster_mobile.webp') !important;
+        background-position: center center;
       }
       section.ecosystem-section {
         padding: 3rem 0;
@@ -2061,7 +2113,7 @@
   <div class="bg-grid" aria-hidden="true"></div>
 
   <!-- Ambient Audio Element -->
-  <audio id="bg-audio" loop preload="auto" src="./audio/Music.mp3"></audio>
+  <audio id="bg-audio" autoplay loop preload="auto" src="./audio/Music.mp3"></audio>
 
   <!-- ==========================================
        HEADER & FLOATING NAVIGATION
@@ -2159,9 +2211,9 @@
           </div>
 
           <!-- High-Resolution Static 3D Poster (Instantly visible, 0ms TBT, 0 Layout Shift) -->
-          <div id="clinlo-3d-poster" class="studio-poster-overlay" style="background-image: url('./branding/clinlo_3d_poster.webp');">
+          <div id="clinlo-3d-poster" class="studio-poster-overlay" onclick="mountInteractive3D(true)" style="background-image: url('./branding/clinlo_3d_poster.webp');">
             <div class="poster-cta-wrapper">
-              <button type="button" id="btn-launch-3d" class="btn-launch-3d" onclick="mountInteractive3D(true)" aria-label="Launch Interactive 3D Avatar">
+              <button type="button" id="btn-launch-3d" class="btn-launch-3d" onclick="event.stopPropagation(); mountInteractive3D(true)" aria-label="Launch Interactive 3D Avatar">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                 <span>Tap to Launch 3D Biometric Avatar</span>
               </button>
@@ -2250,7 +2302,7 @@
           <!-- Live Site View Counter Banner -->
           <div class="live-views-banner" id="live-views-container">
             <span class="live-status-dot"></span>
-            <span class="views-metric"><strong id="site-views-counter">1,733</strong> Site Visitors</span>
+            <span class="views-metric"><strong id="site-views-counter">1,835</strong> Site Visitors</span>
             <span class="views-divider">•</span>
             <span class="views-subtext">CLINLO Wellness Center Pre-Orders Live</span>
           </div>
@@ -2493,18 +2545,48 @@
       });
     }
 
+    let is3DReady = false;
+    let studioReadyFallbackTimer = null;
+
+    function reveal3DStudio() {
+      is3DReady = true;
+      if (studioReadyFallbackTimer) {
+        clearTimeout(studioReadyFallbackTimer);
+        studioReadyFallbackTimer = null;
+      }
+      const poster = document.getElementById('clinlo-3d-poster');
+      if (poster) poster.classList.add('hidden');
+      postStudioVisibilityToFrame(isStudioVisible);
+      postAudioStateToFrame(isSoundPlaying);
+    }
+
     function mountInteractive3D(fromUserAction = false) {
       const iframe = document.getElementById('clinlo-3d-frame');
       const poster = document.getElementById('clinlo-3d-poster');
+      const launchLabel = document.querySelector('#btn-launch-3d span');
+      if (fromUserAction && !userManuallyMuted && !isSoundPlaying) {
+        setAmbientSoundState(true, false);
+      }
       if (!iframe) return;
 
       if (!iframe.src || iframe.src === 'about:blank' || !iframe.src.includes('vibrant_optimized.html')) {
-        iframe.src = './vibrant_optimized.html';
+        is3DReady = false;
+        if (fromUserAction && launchLabel) {
+          launchLabel.textContent = 'Initializing 3D Studio...';
+        }
         iframe.onload = () => {
-          if (poster) poster.classList.add('hidden');
           postStudioVisibilityToFrame(isStudioVisible);
+          postAudioStateToFrame(isSoundPlaying);
+          // Keep poster visible until vibrant_optimized.html emits CLINLO_3D_READY
+          // after Stage 1 + compileAsync + first WebGL frame render (15s safety fallback).
+          if (!is3DReady && !studioReadyFallbackTimer) {
+            studioReadyFallbackTimer = setTimeout(() => {
+              if (!is3DReady) reveal3DStudio();
+            }, 15000);
+          }
         };
-      } else {
+        iframe.src = './vibrant_optimized.html';
+      } else if (is3DReady) {
         if (poster) poster.classList.add('hidden');
       }
     }
@@ -3248,6 +3330,9 @@ Please confirm onboarding schedule and founding membership reservation.`
     }
 
     let isSoundPlaying = false;
+    let desiredAudioPlaying = true;
+    let isPlayAttemptInFlight = false;
+    let latestPlayToken = 0;
     let userManuallyMuted = false;
     let audioUnlockBound = false;
 
@@ -3259,13 +3344,13 @@ Please confirm onboarding schedule and founding membership reservation.`
       if (event && event.target && typeof event.target.closest === 'function' && event.target.closest('.btn-sound-toggle')) {
         return;
       }
-      setAmbientSoundState(true, false);
+      setAmbientSoundState(true, false, true);
     }
 
     function bindAudioUnlockListeners() {
       if (audioUnlockBound || userManuallyMuted) return;
       audioUnlockBound = true;
-      ['pointerdown', 'touchend', 'click', 'keydown'].forEach((evtName) => {
+      ['pointerup', 'touchend', 'click', 'keydown', 'mousedown'].forEach((evtName) => {
         window.addEventListener(evtName, handleFirstGestureAudioUnlock, { capture: true, passive: true });
       });
     }
@@ -3273,7 +3358,7 @@ Please confirm onboarding schedule and founding membership reservation.`
     function removeAudioUnlockListeners() {
       if (!audioUnlockBound) return;
       audioUnlockBound = false;
-      ['pointerdown', 'touchend', 'click', 'keydown'].forEach((evtName) => {
+      ['pointerup', 'touchend', 'click', 'keydown', 'mousedown'].forEach((evtName) => {
         window.removeEventListener(evtName, handleFirstGestureAudioUnlock, { capture: true });
       });
     }
@@ -3281,24 +3366,42 @@ Please confirm onboarding schedule and founding membership reservation.`
     function toggleAmbientSound() {
       const audio = document.getElementById('bg-audio');
       if (!audio) return;
-      setAmbientSoundState(!isSoundPlaying, true);
+      setAmbientSoundState(!isSoundPlaying, true, true);
     }
 
-    function setAmbientSoundState(shouldPlay, isUserToggle = true) {
+    function setAmbientSoundState(shouldPlay, isUserToggle = true, fromGesture = false) {
       const audio = document.getElementById('bg-audio');
       if (!audio) return;
+      desiredAudioPlaying = !!shouldPlay;
       if (shouldPlay) {
         if (isUserToggle) userManuallyMuted = false;
-        audio.volume = 0.45;
+        if (userManuallyMuted) return;
+        if (!fromGesture && !isUserToggle && (isPlayAttemptInFlight || (!audio.paused && isSoundPlaying))) return;
+        if (isSoundPlaying && !audio.paused) return;
+        audio.volume = 0.72;
         audio.muted = false;
+        isPlayAttemptInFlight = true;
+        const myToken = ++latestPlayToken;
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise.then(() => {
+            if (myToken !== latestPlayToken) return;
+            isPlayAttemptInFlight = false;
+            if (!desiredAudioPlaying || userManuallyMuted) {
+              audio.pause();
+              audio.muted = true;
+              isSoundPlaying = false;
+              updateSoundUI(false);
+              postAudioStateToFrame(false);
+              return;
+            }
             isSoundPlaying = true;
             removeAudioUnlockListeners();
             updateSoundUI(true);
             postAudioStateToFrame(true);
           }).catch(err => {
+            if (myToken !== latestPlayToken) return;
+            isPlayAttemptInFlight = false;
             console.debug('Audio autoplay pending user gesture:', err);
             isSoundPlaying = false;
             updateSoundUI(false);
@@ -3306,12 +3409,15 @@ Please confirm onboarding schedule and founding membership reservation.`
             if (!userManuallyMuted) bindAudioUnlockListeners();
           });
         } else {
+          isPlayAttemptInFlight = false;
           isSoundPlaying = true;
           removeAudioUnlockListeners();
           updateSoundUI(true);
           postAudioStateToFrame(true);
         }
       } else {
+        latestPlayToken++;
+        isPlayAttemptInFlight = false;
         if (isUserToggle) {
           userManuallyMuted = true;
           removeAudioUnlockListeners();
@@ -3350,7 +3456,9 @@ Please confirm onboarding schedule and founding membership reservation.`
     // Bidirectional postMessage listener for 3D studio frame
     window.addEventListener('message', (event) => {
       if (!event.data) return;
-      if (event.data.type === 'CLINLO_AUDIO_TOGGLE') {
+      if (event.data.type === 'CLINLO_3D_READY') {
+        reveal3DStudio();
+      } else if (event.data.type === 'CLINLO_AUDIO_TOGGLE') {
         toggleAmbientSound();
       } else if (event.data.type === 'CLINLO_AUDIO_UNLOCK') {
         if (!userManuallyMuted && !isSoundPlaying) {
@@ -3392,6 +3500,12 @@ Please confirm onboarding schedule and founding membership reservation.`
       // Play ambient background music by default (or automatically on first user gesture if browser blocks initial autoplay)
       setAmbientSoundState(true, false);
       bindAudioUnlockListeners();
+      window.addEventListener('load', () => {
+        if (!userManuallyMuted && !isSoundPlaying) setAmbientSoundState(true, false);
+      }, { once: true });
+      window.addEventListener('pageshow', () => {
+        if (!userManuallyMuted && !isSoundPlaying) setAmbientSoundState(true, false);
+      });
       // Check device viewport for progressive 3D mount
       const isMobile = window.innerWidth <= 768 || /Mobi|Android|iPhone/i.test(navigator.userAgent);
       if (!isMobile) {
@@ -3399,21 +3513,9 @@ Please confirm onboarding schedule and founding membership reservation.`
         window.addEventListener('load', () => {
           setTimeout(() => mountInteractive3D(false), 250);
         });
-      } else {
-        // Mobile: Observe 3D Studio Section to pre-mount when approaching viewport
-        const studioSec = document.getElementById('interactive-3d');
-        if (studioSec && 'IntersectionObserver' in window) {
-          const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-              if (entry.isIntersecting) {
-                mountInteractive3D(false);
-                observer.disconnect();
-              }
-            });
-          }, { rootMargin: '300px 0px' });
-          observer.observe(studioSec);
-        }
       }
+      // Mobile keeps #clinlo-3d-poster unmounted until user taps Launch or Explore 3D Studio
+      // so initial page load and scrolling stay 100% stutter-free on entry-level devices.
 
       // Also listen to any click on anchors pointing to #interactive-3d to immediately mount
       document.querySelectorAll('a[href="#interactive-3d"]').forEach(link => {

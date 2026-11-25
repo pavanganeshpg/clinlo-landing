@@ -1,17 +1,42 @@
 // Service Worker for CLINLO 3D Health ATM & Vibrant Wellness Experience
-// Cache-First strategy strictly scoped to 3D binary assets (/models/, /texture/, /map/, /draco/).
-// Never intercepts HTML, ES modules (.js), CSS, /api/, non-GET, or cross-origin requests.
+// Cache-First strategy scoped to 3D binary assets (/models/, /texture/, /map/, /draco/)
+// and immutable core 3D runtime modules. Never intercepts HTML, /api/, non-GET, or cross-origin requests.
 
-const CACHE_NAME = 'clinlo-3d-cache-v5';
+const CACHE_NAME = 'clinlo-3d-cache-v6';
 
-// Core lightweight decoder & shared textures cached on install;
-// large .glb models are cached lazily on first fetch (Cache-First) so initial page load & module imports stay fast.
+// Core lightweight runtime, decoder & shared textures cached on install;
+// large .glb models are cached lazily on first fetch (Cache-First) so initial page load stays fast.
 const PRECACHE_ASSETS = [
+  './three.module.min.js',
+  './gsap.min.js',
+  './OrbitControls.js',
+  './GLTFLoader.js',
+  './DRACOLoader.js',
+  './SubsurfaceScatteringShader.js',
+  './branding/clinlo_3d_poster.webp',
+  './branding/clinlo_3d_poster_mobile.webp',
+  './fonts/PlusJakartaSans-latin.woff2',
+  './fonts/UbuntuMono-400-latin.woff2',
+  './fonts/UbuntuMono-700-latin.woff2',
   './draco/draco_decoder.wasm',
   './draco/draco_wasm_wrapper.js',
   './texture/white.jpg',
   './texture/mats/mat20.png'
 ];
+
+const CORE_CACHEABLE_PATHS = new Set([
+  '/three.module.min.js',
+  '/gsap.min.js',
+  '/OrbitControls.js',
+  '/GLTFLoader.js',
+  '/DRACOLoader.js',
+  '/SubsurfaceScatteringShader.js',
+  '/branding/clinlo_3d_poster.webp',
+  '/branding/clinlo_3d_poster_mobile.webp',
+  '/fonts/PlusJakartaSans-latin.woff2',
+  '/fonts/UbuntuMono-400-latin.woff2',
+  '/fonts/UbuntuMono-700-latin.woff2'
+]);
 
 async function precacheInSmallBatches(cache, urls, concurrency = 1) {
   let idx = 0;
@@ -65,14 +90,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Apply Cache-First ONLY for heavy 3D binary assets; let browser handle HTML/JS/CSS natively
+  // Apply Cache-First for heavy 3D binary assets & core runtime scripts; let browser handle HTML & sw.js natively
+  const isCoreRuntimeAsset =
+    CORE_CACHEABLE_PATHS.has(url.pathname) ||
+    Array.from(CORE_CACHEABLE_PATHS).some((p) => url.pathname.endsWith(p));
+
   const is3dBinaryAsset =
     url.pathname.includes('/models/') ||
     url.pathname.includes('/texture/') ||
     url.pathname.includes('/map/') ||
     url.pathname.includes('/draco/');
 
-  if (!is3dBinaryAsset) {
+  if (!is3dBinaryAsset && !isCoreRuntimeAsset) {
     return;
   }
 
