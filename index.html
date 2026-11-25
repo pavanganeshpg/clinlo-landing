@@ -691,7 +691,7 @@
       display: flex;
       align-items: center;
       gap: 0.45rem;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
       box-shadow: 0 8px 24px -4px rgba(14, 165, 233, 0.16), inset 0 1.5px 2px #ffffff;
       text-decoration: none;
       text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -703,6 +703,16 @@
       color: var(--slate-900);
       transform: scale(1.02);
       box-shadow: 0 8px 24px rgba(14, 165, 233, 0.18);
+    }
+    .studio-viewport-card:not(.is-3d-ready) .fullscreen-btn {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    @media (min-width: 769px) {
+      .studio-poster-overlay:not(.manual-fallback) .poster-cta-wrapper {
+        display: none;
+      }
     }
     @media (max-width: 768px) {
       .viewport-overlay-controls {
@@ -2113,7 +2123,7 @@
   <div class="bg-grid" aria-hidden="true"></div>
 
   <!-- Ambient Audio Element -->
-  <audio id="bg-audio" autoplay loop preload="auto" src="./audio/Music.mp3"></audio>
+  <audio id="bg-audio" loop preload="none" src="./audio/Music.mp3"></audio>
 
   <!-- ==========================================
        HEADER & FLOATING NAVIGATION
@@ -2204,7 +2214,7 @@
         <div id="interactive-3d" class="studio-viewport-card" aria-label="Interactive 3D Biometric Explorer">
           <!-- Floating Controls inside Viewport -->
           <div class="viewport-overlay-controls" style="justify-content: flex-end;">
-            <a href="./vibrant_optimized.html" target="_blank" rel="noopener" class="fullscreen-btn" aria-label="Open Fullscreen Studio">
+            <a href="./vibrant_optimized.html?v=20261125" target="_blank" rel="noopener" class="fullscreen-btn" aria-label="Open Fullscreen Studio">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
               <span>Full Screen</span>
             </a>
@@ -2302,7 +2312,7 @@
           <!-- Live Site View Counter Banner -->
           <div class="live-views-banner" id="live-views-container">
             <span class="live-status-dot"></span>
-            <span class="views-metric"><strong id="site-views-counter">1,835</strong> Site Visitors</span>
+            <span class="views-metric"><strong id="site-views-counter">1,899</strong> Site Visitors</span>
             <span class="views-divider">•</span>
             <span class="views-subtext">CLINLO Wellness Center Pre-Orders Live</span>
           </div>
@@ -2547,6 +2557,7 @@
 
     let is3DReady = false;
     let studioReadyFallbackTimer = null;
+    let studioMountAttempt = 0;
 
     function reveal3DStudio() {
       is3DReady = true;
@@ -2554,10 +2565,45 @@
         clearTimeout(studioReadyFallbackTimer);
         studioReadyFallbackTimer = null;
       }
+      const studioCard = document.getElementById('interactive-3d');
+      if (studioCard) studioCard.classList.add('is-3d-ready');
       const poster = document.getElementById('clinlo-3d-poster');
-      if (poster) poster.classList.add('hidden');
+      if (poster) {
+        poster.classList.remove('manual-fallback');
+        poster.classList.add('hidden');
+      }
       postStudioVisibilityToFrame(isStudioVisible);
       postAudioStateToFrame(isSoundPlaying);
+    }
+
+    function armStudioFallbackTimer() {
+      if (studioReadyFallbackTimer) {
+        clearTimeout(studioReadyFallbackTimer);
+      }
+      studioReadyFallbackTimer = setTimeout(() => {
+        studioReadyFallbackTimer = null;
+        if (is3DReady) return;
+        try {
+          const iframe = document.getElementById('clinlo-3d-frame');
+          if (iframe && iframe.contentWindow && iframe.contentWindow.__clinloStage1Ready === true) {
+            reveal3DStudio();
+            return;
+          }
+        } catch (e) {}
+        handle3DFailureOrDelay(false);
+      }, 15000);
+    }
+
+    function handle3DFailureOrDelay(isFatal = false) {
+      if (is3DReady) return;
+      const poster = document.getElementById('clinlo-3d-poster');
+      const launchLabel = document.querySelector('#btn-launch-3d span');
+      if (launchLabel) {
+        launchLabel.textContent = isFatal ? '3D Unavailable — Tap to Retry' : 'Tap to Retry 3D Studio';
+      }
+      if (poster) {
+        poster.classList.add('manual-fallback');
+      }
     }
 
     function mountInteractive3D(fromUserAction = false) {
@@ -2565,27 +2611,47 @@
       const poster = document.getElementById('clinlo-3d-poster');
       const launchLabel = document.querySelector('#btn-launch-3d span');
       if (fromUserAction && !userManuallyMuted && !isSoundPlaying) {
-        setAmbientSoundState(true, false);
+        setAmbientSoundState(true, false, true);
       }
       if (!iframe) return;
 
-      if (!iframe.src || iframe.src === 'about:blank' || !iframe.src.includes('vibrant_optimized.html')) {
+      const isAlreadyMounted = Boolean(iframe.src && iframe.src !== 'about:blank' && iframe.src.includes('vibrant_optimized.html'));
+      let shouldReload = !isAlreadyMounted;
+      if (isAlreadyMounted && fromUserAction && !is3DReady) {
+        if (poster && poster.classList.contains('manual-fallback')) {
+          shouldReload = true;
+        } else {
+          try {
+            if (iframe.contentWindow && iframe.contentWindow.__clinloStage1Failed) {
+              shouldReload = true;
+            }
+          } catch (e) {}
+        }
+      }
+
+      if (shouldReload) {
         is3DReady = false;
+        studioMountAttempt++;
+        if (poster) poster.classList.remove('manual-fallback');
         if (fromUserAction && launchLabel) {
           launchLabel.textContent = 'Initializing 3D Studio...';
         }
+        // Keep poster intact until vibrant_optimized.html emits CLINLO_3D_READY
+        // after Stage 1 + compileAsync + first WebGL frame render. Never reveal an empty canvas.
+        armStudioFallbackTimer();
         iframe.onload = () => {
           postStudioVisibilityToFrame(isStudioVisible);
           postAudioStateToFrame(isSoundPlaying);
-          // Keep poster visible until vibrant_optimized.html emits CLINLO_3D_READY
-          // after Stage 1 + compileAsync + first WebGL frame render (15s safety fallback).
-          if (!is3DReady && !studioReadyFallbackTimer) {
-            studioReadyFallbackTimer = setTimeout(() => {
-              if (!is3DReady) reveal3DStudio();
-            }, 15000);
-          }
+          try {
+            if (iframe.contentWindow && iframe.contentWindow.__clinloStage1Ready === true) {
+              reveal3DStudio();
+              return;
+            }
+          } catch (e) {}
         };
-        iframe.src = './vibrant_optimized.html';
+        iframe.src = studioMountAttempt === 1
+          ? './vibrant_optimized.html?v=20261125'
+          : `./vibrant_optimized.html?v=20261125&r=${studioMountAttempt}`;
       } else if (is3DReady) {
         if (poster) poster.classList.add('hidden');
       }
@@ -3350,7 +3416,7 @@ Please confirm onboarding schedule and founding membership reservation.`
     function bindAudioUnlockListeners() {
       if (audioUnlockBound || userManuallyMuted) return;
       audioUnlockBound = true;
-      ['pointerup', 'touchend', 'click', 'keydown', 'mousedown'].forEach((evtName) => {
+      ['pointerup', 'touchend', 'click', 'keydown'].forEach((evtName) => {
         window.addEventListener(evtName, handleFirstGestureAudioUnlock, { capture: true, passive: true });
       });
     }
@@ -3358,7 +3424,7 @@ Please confirm onboarding schedule and founding membership reservation.`
     function removeAudioUnlockListeners() {
       if (!audioUnlockBound) return;
       audioUnlockBound = false;
-      ['pointerup', 'touchend', 'click', 'keydown', 'mousedown'].forEach((evtName) => {
+      ['pointerup', 'touchend', 'click', 'keydown'].forEach((evtName) => {
         window.removeEventListener(evtName, handleFirstGestureAudioUnlock, { capture: true });
       });
     }
@@ -3458,14 +3524,22 @@ Please confirm onboarding schedule and founding membership reservation.`
       if (!event.data) return;
       if (event.data.type === 'CLINLO_3D_READY') {
         reveal3DStudio();
+      } else if (event.data.type === 'CLINLO_3D_FAILED') {
+        if (studioReadyFallbackTimer) {
+          clearTimeout(studioReadyFallbackTimer);
+          studioReadyFallbackTimer = null;
+        }
+        handle3DFailureOrDelay(true);
       } else if (event.data.type === 'CLINLO_AUDIO_TOGGLE') {
         toggleAmbientSound();
       } else if (event.data.type === 'CLINLO_AUDIO_UNLOCK') {
         if (!userManuallyMuted && !isSoundPlaying) {
-          setAmbientSoundState(true, false);
+          setAmbientSoundState(true, false, true);
         }
       } else if (event.data.type === 'CLINLO_AUDIO_SET') {
-        setAmbientSoundState(!!event.data.playing, event.data.fromUser !== false);
+        const fromUser = event.data.fromUser !== false;
+        const fromGesture = event.data.fromGesture === true || fromUser;
+        setAmbientSoundState(!!event.data.playing, fromUser, fromGesture);
       } else if (event.data.type === 'CLINLO_AUDIO_REQUEST_STATE') {
         postAudioStateToFrame(isSoundPlaying);
       }
@@ -3500,19 +3574,11 @@ Please confirm onboarding schedule and founding membership reservation.`
       // Play ambient background music by default (or automatically on first user gesture if browser blocks initial autoplay)
       setAmbientSoundState(true, false);
       bindAudioUnlockListeners();
-      window.addEventListener('load', () => {
-        if (!userManuallyMuted && !isSoundPlaying) setAmbientSoundState(true, false);
-      }, { once: true });
-      window.addEventListener('pageshow', () => {
-        if (!userManuallyMuted && !isSoundPlaying) setAmbientSoundState(true, false);
-      });
       // Check device viewport for progressive 3D mount
       const isMobile = window.innerWidth <= 768 || /Mobi|Android|iPhone/i.test(navigator.userAgent);
       if (!isMobile) {
-        // Desktop: mount smoothly after page load
-        window.addEventListener('load', () => {
-          setTimeout(() => mountInteractive3D(false), 250);
-        });
+        // Desktop: mount immediately after initial paint without blocking on audio preload
+        requestAnimationFrame(() => setTimeout(() => mountInteractive3D(false), 50));
       }
       // Mobile keeps #clinlo-3d-poster unmounted until user taps Launch or Explore 3D Studio
       // so initial page load and scrolling stay 100% stutter-free on entry-level devices.
