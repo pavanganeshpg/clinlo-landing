@@ -260,10 +260,8 @@
       justify-content: space-between;
       gap: 1.5rem;
       padding: 0.65rem 1.4rem;
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1px solid rgba(255, 255, 255, 0.85);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.93) 0%, rgba(246, 250, 255, 0.88) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.88);
       border-top: 1px solid rgba(255, 255, 255, 1);
       border-radius: var(--radius-pill);
       box-shadow: 
@@ -328,9 +326,7 @@
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.88);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.96) 0%, rgba(242, 249, 255, 0.90) 100%);
       border: 1.5px solid #38bdf8;
       box-shadow: 
         0 4px 16px rgba(14, 165, 233, 0.18),
@@ -382,17 +378,22 @@
       border: 2px solid rgba(14, 165, 233, 0.45);
       box-shadow: 0 0 14px rgba(14, 165, 233, 0.35);
       pointer-events: none;
-      animation: sound-pulse 2s infinite ease-in-out;
-      will-change: transform, opacity;
+      transform: scale(1.02);
+      opacity: 0.72;
+      animation: sound-pulse 1.5s 1 ease-in-out forwards;
     }
     @keyframes sound-pulse {
-      0%, 100% {
+      0% {
         transform: scale(0.96);
         opacity: 0.45;
       }
       50% {
         transform: scale(1.08);
         opacity: 0.95;
+      }
+      100% {
+        transform: scale(1.02);
+        opacity: 0.72;
       }
     }
     .btn-sound-toggle:focus-visible {
@@ -466,9 +467,7 @@
       align-items: center;
       gap: 0.65rem;
       padding: 0.5rem 1.35rem;
-      background: rgba(255, 255, 255, 0.82);
-      backdrop-filter: blur(24px) saturate(190%);
-      -webkit-backdrop-filter: blur(24px) saturate(190%);
+      background: rgba(255, 255, 255, 0.90);
       border: 1px solid rgba(255, 255, 255, 0.95);
       border-top: 1px solid #ffffff;
       border-radius: var(--radius-pill);
@@ -492,8 +491,7 @@
       border-radius: 50%;
       background: linear-gradient(135deg, var(--cyan-600) 0%, var(--cyan-400) 100%);
       box-shadow: 0 0 10px var(--cyan-400), 0 0 4px var(--cyan-600);
-      animation: pulseDot 2s infinite ease-in-out;
-      will-change: transform, opacity;
+      animation: pulseDot 1.6s 1 ease-in-out forwards;
       transform: translateZ(0);
     }
 
@@ -538,8 +536,11 @@
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         pointer-events: none;
-        animation: liquidTextShimmerOpacity 4s ease-in-out infinite alternate;
-        will-change: opacity;
+        opacity: 0;
+        animation: liquidTextShimmerOpacity 2.4s ease-in-out 1 alternate forwards;
+      }
+      h1.hero-title:hover span.gradient-text::after {
+        animation: liquidTextShimmerOpacity 2.4s ease-in-out 1 alternate;
       }
     }
 
@@ -671,13 +672,11 @@
       font-weight: 650;
       letter-spacing: -0.015em;
       border-radius: var(--radius-pill);
-      background: rgba(255, 255, 255, 0.78);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(244, 250, 255, 0.88) 100%);
       color: var(--slate-900);
       text-decoration: none;
       border: 1px solid rgba(255, 255, 255, 0.9);
       border-top: 1px solid #ffffff;
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
       box-shadow: 
         0 12px 32px -6px rgba(14, 165, 233, 0.12),
         inset 0 1.5px 2px rgba(255, 255, 255, 1),
@@ -744,9 +743,7 @@
 
     .viewport-pill-badge {
       pointer-events: auto;
-      background: rgba(255, 255, 255, 0.84);
-      backdrop-filter: blur(28px) saturate(200%);
-      -webkit-backdrop-filter: blur(28px) saturate(200%);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(246, 250, 255, 0.88) 100%);
       border: 1.5px solid rgba(255, 255, 255, 0.95);
       border-top: 2px solid #ffffff;
       border-radius: var(--radius-pill);
@@ -763,9 +760,7 @@
 
     .fullscreen-btn {
       pointer-events: auto;
-      background: rgba(255, 255, 255, 0.84);
-      backdrop-filter: blur(28px) saturate(200%);
-      -webkit-backdrop-filter: blur(28px) saturate(200%);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(246, 250, 255, 0.88) 100%);
       border: 1.5px solid rgba(255, 255, 255, 0.95);
       border-top: 2px solid #ffffff;
       border-radius: var(--radius-pill);
@@ -842,8 +837,6 @@
     .poster-cta-wrapper {
       text-align: center;
       background: rgba(15, 23, 42, 0.68);
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
       border: 1px solid rgba(255, 255, 255, 0.25);
       border-top: 1px solid rgba(255, 255, 255, 0.5);
       padding: 1.65rem 2.45rem;
@@ -1098,8 +1091,7 @@
       border-radius: 50%;
       background: #10b981;
       box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
-      animation: liveDotPulse 2s infinite ease-in-out;
-      will-change: transform, opacity;
+      animation: liveDotPulse 1.6s 1 ease-in-out forwards;
       transform: translateZ(0);
     }
 
@@ -1802,14 +1794,6 @@
         height: 100vh;
         height: 100lvh;
         background-color: #f6fafd;
-        background-image:
-          linear-gradient(to right, rgba(203, 213, 225, 0.15) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(203, 213, 225, 0.15) 1px, transparent 1px),
-          radial-gradient(ellipse 90% 60% at 50% -12%, rgba(224, 242, 254, 0.85) 0%, rgba(237, 233, 254, 0.45) 40%, transparent 75%),
-          radial-gradient(circle 800px at 10% 40%, rgba(224, 242, 254, 0.55) 0%, rgba(237, 233, 254, 0.25) 50%, transparent 70%),
-          radial-gradient(circle 850px at 90% 65%, rgba(237, 233, 254, 0.5) 0%, rgba(224, 242, 254, 0.35) 50%, transparent 75%),
-          radial-gradient(circle 950px at 50% 100%, rgba(224, 242, 254, 0.7) 0%, transparent 70%);
-        background-size: 64px 64px, 64px 64px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
         transform: translate3d(0, 0, 0);
         will-change: transform;
       }
@@ -2300,7 +2284,7 @@
         <div id="interactive-3d" class="studio-viewport-card" aria-label="Interactive 3D Biometric Explorer">
           <!-- Floating Controls inside Viewport -->
           <div class="viewport-overlay-controls" style="justify-content: flex-end;">
-            <a href="./vibrant_optimized.html?v=20261125" target="_blank" rel="noopener" class="fullscreen-btn" aria-label="Open Fullscreen Studio">
+            <a href="./vibrant_optimized.html?v=20261126" target="_blank" rel="noopener" class="fullscreen-btn" aria-label="Open Fullscreen Studio">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
               <span>Full Screen</span>
             </a>
@@ -2398,7 +2382,7 @@
           <!-- Live Site View Counter Banner -->
           <div class="live-views-banner" id="live-views-container">
             <span class="live-status-dot"></span>
-            <span class="views-metric"><strong id="site-views-counter">2,393</strong> Site Visitors</span>
+            <span class="views-metric"><strong id="site-views-counter">2,625</strong> Site Visitors</span>
             <span class="views-divider">•</span>
             <span class="views-subtext">CLINLO Wellness Center Pre-Orders Live</span>
           </div>
@@ -2795,8 +2779,8 @@
           } catch (e) {}
         };
         iframe.src = studioMountAttempt === 1
-          ? './vibrant_optimized.html?v=20261125'
-          : `./vibrant_optimized.html?v=20261125&r=${studioMountAttempt}`;
+          ? './vibrant_optimized.html?v=20261126'
+          : `./vibrant_optimized.html?v=20261126&r=${studioMountAttempt}`;
       } else if (is3DReady) {
         if (poster) poster.classList.add('hidden');
       }
@@ -3567,7 +3551,7 @@ Please confirm onboarding schedule and founding membership reservation.`
     let audioOwner = 'parent';
 
     function promoteAudioPreload() {
-      if (audioPreloadPromoted) return;
+      if (audioPreloadPromoted || userManuallyMuted) return;
       audioPreloadPromoted = true;
       const audio = document.getElementById('bg-audio');
       if (!audio) return;
@@ -3578,7 +3562,7 @@ Please confirm onboarding schedule and founding membership reservation.`
     }
 
     function scheduleAudioPreloadPromotion(reset = false) {
-      if (audioPreloadPromoted) return;
+      if (audioPreloadPromoted || userManuallyMuted) return;
       if (audioPreloadTimer) {
         if (!reset) return;
         clearTimeout(audioPreloadTimer);

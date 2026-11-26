@@ -64,7 +64,13 @@ const SubsurfaceScatteringShader = {
 		'	reflectedLight.directDiffuse += (scatteringIllu * thicknessAttenuation + sssRimColor) * directLight.color;',
 		'}',
 
-		meshphong_frag_body.replace( '#include <lights_fragment_begin>',
+		meshphong_frag_body.replace( '#include <alphahash_fragment>', [
+			'#include <alphahash_fragment>',
+			'if ( diffuseColor.a < 0.999 ) {',
+			'	float _clinloAlphaNoise = fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );',
+			'	if ( diffuseColor.a < _clinloAlphaNoise ) discard;',
+			'}'
+		].join( '\n' ) ).replace( '#include <lights_fragment_begin>',
 
 			replaceAll(
 				ShaderChunk[ 'lights_fragment_begin' ].replace(
