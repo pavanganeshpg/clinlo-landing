@@ -41,12 +41,10 @@ const SubsurfaceScatteringShader = {
 	] ),
 
 	vertexShader: [
-		'#define USE_UV',
 		ShaderChunk[ 'meshphong_vert' ],
 	].join( '\n' ),
 
 	fragmentShader: [
-		'#define USE_UV',
 		'#define SUBSURFACE',
 
 		meshphong_frag_head,
@@ -59,27 +57,31 @@ const SubsurfaceScatteringShader = {
 		'uniform float thicknessAttenuation;',
 		'uniform vec3 thicknessColor;',
 
-		'void RE_Direct_Scattering(const in IncidentLight directLight, const in vec2 uv, const in vec3 geometryPosition, const in vec3 geometryNormal, const in vec3 geometryViewDir, const in vec3 geometryClearcoatNormal, inout ReflectedLight reflectedLight) {',
-		'	vec3 thickness = thicknessColor * texture2D(thicknessMap, uv).r;',
+		'void RE_Direct_Scattering(const in IncidentLight directLight, const in vec3 geometryPosition, const in vec3 geometryNormal, const in vec3 geometryViewDir, const in vec3 geometryClearcoatNormal, inout ReflectedLight reflectedLight, const in vec3 sssRimColor) {',
 		'	vec3 scatteringHalf = normalize(directLight.direction + (geometryNormal * thicknessDistortion));',
 		'	float scatteringDot = pow(saturate(dot(geometryViewDir, -scatteringHalf)), thicknessPower) * thicknessScale;',
-		'	vec3 scatteringIllu = (scatteringDot + thicknessAmbient) * thickness;',
-		'	reflectedLight.directDiffuse += scatteringIllu * thicknessAttenuation * directLight.color;',
-		'	// Ethereal Fresnel Rim Glow (signature translucent jewel edge glow)',
-		'	float rim = pow(1.0 - saturate(dot(geometryNormal, geometryViewDir)), 2.8);',
-		'	reflectedLight.directDiffuse += thicknessColor * (rim * 0.55 * directLight.color);',
+		'	vec3 scatteringIllu = (scatteringDot + thicknessAmbient) * thicknessColor;',
+		'	reflectedLight.directDiffuse += (scatteringIllu * thicknessAttenuation + sssRimColor) * directLight.color;',
 		'}',
 
 		meshphong_frag_body.replace( '#include <lights_fragment_begin>',
 
 			replaceAll(
-				ShaderChunk[ 'lights_fragment_begin' ],
+				ShaderChunk[ 'lights_fragment_begin' ].replace(
+					'#if ( NUM_POINT_LIGHTS > 0 ) && defined( RE_Direct )',
+					[
+						'#if defined( SUBSURFACE )',
+						'	vec3 sssRimColor = thicknessColor * (pow(1.0 - saturate(dot(geometryNormal, geometryViewDir)), 2.8) * 0.55);',
+						'#endif',
+						'#if ( NUM_POINT_LIGHTS > 0 ) && defined( RE_Direct )'
+					].join( '\n' )
+				),
 				'RE_Direct( directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight );',
 				[
 					'RE_Direct( directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight );',
 
-					'#if defined( SUBSURFACE ) && defined( USE_UV )',
-					' RE_Direct_Scattering(directLight, vUv, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, reflectedLight);',
+					'#if defined( SUBSURFACE )',
+					' RE_Direct_Scattering(directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, reflectedLight, sssRimColor);',
 					'#endif',
 				].join( '\n' )
 			),

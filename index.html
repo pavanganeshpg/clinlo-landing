@@ -187,7 +187,6 @@
     }
 
     html {
-      scroll-behavior: smooth;
       font-size: 16px;
       background-color: #f6fafd;
       -webkit-font-smoothing: antialiased;
@@ -197,29 +196,30 @@
     body {
       font-family: var(--font-sans);
       background-color: #f6fafd;
-      background-image: 
-        radial-gradient(ellipse 90% 60% at 50% -12%, rgba(224, 242, 254, 0.85) 0%, rgba(237, 233, 254, 0.45) 40%, transparent 75%),
-        radial-gradient(circle 800px at 10% 40%, rgba(224, 242, 254, 0.55) 0%, rgba(237, 233, 254, 0.25) 50%, transparent 70%),
-        radial-gradient(circle 850px at 90% 65%, rgba(237, 233, 254, 0.5) 0%, rgba(224, 242, 254, 0.35) 50%, transparent 75%),
-        radial-gradient(circle 950px at 50% 100%, rgba(224, 242, 254, 0.7) 0%, transparent 70%);
-      background-attachment: fixed;
       color: var(--slate-900);
       min-height: 100vh;
       overflow-x: hidden;
       line-height: 1.6;
     }
 
-    /* Architectural hairline background guidelines (Ground Truth Noomo inspired) */
+    /* Architectural hairline background guidelines + GPU-composited radial backdrop (zero scroll repaint) */
     .bg-grid {
       position: fixed;
       inset: 0;
+      background-color: #f6fafd;
       background-image: 
-        linear-gradient(to right, rgba(203, 213, 225, 0.25) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(203, 213, 225, 0.25) 1px, transparent 1px);
-      background-size: 64px 64px;
+        linear-gradient(to right, rgba(203, 213, 225, 0.15) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(203, 213, 225, 0.15) 1px, transparent 1px),
+        radial-gradient(ellipse 90% 60% at 50% -12%, rgba(224, 242, 254, 0.85) 0%, rgba(237, 233, 254, 0.45) 40%, transparent 75%),
+        radial-gradient(circle 800px at 10% 40%, rgba(224, 242, 254, 0.55) 0%, rgba(237, 233, 254, 0.25) 50%, transparent 70%),
+        radial-gradient(circle 850px at 90% 65%, rgba(237, 233, 254, 0.5) 0%, rgba(224, 242, 254, 0.35) 50%, transparent 75%),
+        radial-gradient(circle 950px at 50% 100%, rgba(224, 242, 254, 0.7) 0%, transparent 70%);
+      background-size: 64px 64px, 64px 64px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
       pointer-events: none;
       z-index: 0;
-      opacity: 0.6;
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+      will-change: transform;
     }
 
     /* Accessible focus rings */
@@ -314,8 +314,6 @@
     .nav-links a:hover {
       color: var(--cyan-700);
       background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       box-shadow: 0 4px 16px rgba(14, 165, 233, 0.15), inset 0 1px 1px #ffffff;
     }
 
@@ -375,14 +373,26 @@
         0 0 0 3px rgba(14, 165, 233, 0.2),
         0 6px 20px rgba(14, 165, 233, 0.32),
         inset 0 1px 1.5px #ffffff;
+    }
+    .btn-sound-toggle.sound-playing::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid rgba(14, 165, 233, 0.45);
+      box-shadow: 0 0 14px rgba(14, 165, 233, 0.35);
+      pointer-events: none;
       animation: sound-pulse 2s infinite ease-in-out;
+      will-change: transform, opacity;
     }
     @keyframes sound-pulse {
       0%, 100% {
-        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2), 0 4px 16px rgba(14, 165, 233, 0.2), inset 0 1px 1.5px #ffffff;
+        transform: scale(0.96);
+        opacity: 0.45;
       }
       50% {
-        box-shadow: 0 0 0 5px rgba(14, 165, 233, 0.38), 0 8px 28px rgba(14, 165, 233, 0.45), inset 0 1px 1.5px #ffffff;
+        transform: scale(1.08);
+        opacity: 0.95;
       }
     }
     .btn-sound-toggle:focus-visible {
@@ -474,7 +484,6 @@
         0 6px 22px -4px rgba(14, 165, 233, 0.18),
         inset 0 1.5px 2px rgba(255, 255, 255, 1),
         inset 0 -1.5px 2.5px rgba(186, 230, 253, 0.35);
-      filter: drop-shadow(0 1px 4px rgba(37, 99, 235, 0.12));
     }
 
     .badge-dot {
@@ -484,11 +493,13 @@
       background: linear-gradient(135deg, var(--cyan-600) 0%, var(--cyan-400) 100%);
       box-shadow: 0 0 10px var(--cyan-400), 0 0 4px var(--cyan-600);
       animation: pulseDot 2s infinite ease-in-out;
+      will-change: transform, opacity;
+      transform: translateZ(0);
     }
 
     @keyframes pulseDot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.45; transform: scale(0.85); }
+      0%, 100% { opacity: 1; transform: translateZ(0) scale(1); }
+      50% { opacity: 0.45; transform: translateZ(0) scale(0.85); }
     }
 
     /* Liquid Glass Hero Title */
@@ -508,18 +519,85 @@
     h1.hero-title span.gradient-text {
       background: linear-gradient(135deg, #0284c7 0%, #38bdf8 20%, #818cf8 45%, #c084fc 70%, #38bdf8 90%, #0284c7 100%);
       background-size: 250% auto;
+      background-position: 10% 50%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       filter: drop-shadow(0 2px 14px rgba(56, 189, 248, 0.4));
-      animation: liquidTextShimmer 8s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
-      transform: translate3d(0, 0, 0);
-      will-change: background-position;
     }
 
-    @keyframes liquidTextShimmer {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    @media (min-width: 1100px) {
+      h1.hero-title span.gradient-text {
+        position: relative;
+        display: inline-block;
+      }
+      h1.hero-title span.gradient-text::after {
+        content: attr(data-text);
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #818cf8 0%, #c084fc 30%, #38bdf8 65%, #0284c7 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        pointer-events: none;
+        animation: liquidTextShimmerOpacity 4s ease-in-out infinite alternate;
+        will-change: opacity;
+      }
+    }
+
+    @keyframes liquidTextShimmerOpacity {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    .is-offscreen .badge-dot,
+    .is-offscreen .live-status-dot,
+    .is-offscreen span.gradient-text::after,
+    .is-offscreen.btn-sound-toggle.sound-playing::after,
+    body.is-scrolling .badge-dot,
+    body.is-scrolling .live-status-dot,
+    body.is-scrolling .btn-sound-toggle.sound-playing::after,
+    body.is-scrolling h1.hero-title span.gradient-text::after,
+    body.tab-hidden .badge-dot,
+    body.tab-hidden .live-status-dot,
+    body.tab-hidden .btn-sound-toggle.sound-playing::after,
+    body.tab-hidden h1.hero-title span.gradient-text::after {
+      animation-play-state: paused !important;
+    }
+    body.is-scrolling .feature-card,
+    body.is-scrolling .feature-card *,
+    body.is-scrolling .section-header,
+    body.is-scrolling .section-header *,
+    body.is-scrolling .badge-pill,
+    body.is-scrolling h1.hero-title,
+    body.is-scrolling p.hero-subtitle,
+    body.is-scrolling .live-views-banner,
+    body.is-scrolling .live-views-banner *,
+    body.is-scrolling .tier-features-list,
+    body.is-scrolling .tier-features-list *,
+    body.is-scrolling .form-trust-note,
+    body.is-scrolling footer.site-footer,
+    body.is-scrolling footer.site-footer * {
+      pointer-events: none !important;
+    }
+    body.is-scrolling footer.site-footer a {
+      pointer-events: auto !important;
+    }
+    body.is-scrolling .membership-tier-card,
+    body.is-scrolling .btn-lg-primary,
+    body.is-scrolling .btn-lg-glass,
+    body.is-scrolling .btn-submit-waitlist {
+      transition: none !important;
+    }
+    body.is-scrolling .membership-tier-card:hover:not(.selected) {
+      background: rgba(255, 255, 255, 0.84);
+      border-color: rgba(255, 255, 255, 0.9);
+      border-top-color: #ffffff;
+      transform: none;
+      box-shadow:
+        0 16px 40px -10px rgba(14, 165, 233, 0.10),
+        0 4px 14px -2px rgba(15, 23, 42, 0.03),
+        inset 0 1.5px 2px rgba(255, 255, 255, 1),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+        inset 0 -1.5px 3px rgba(186, 230, 253, 0.25);
     }
 
     /* Hero Subtitle */
@@ -823,6 +901,7 @@
       padding: 5rem 0;
       position: relative;
       scroll-margin-top: calc(80px + 1.5rem);
+      contain: layout style;
     }
 
     .section-header {
@@ -871,13 +950,12 @@
     }
 
     .feature-card {
-      background: rgba(255, 255, 255, 0.74);
+      background: rgba(255, 255, 255, 0.78);
       border: 1px solid rgba(255, 255, 255, 0.88);
       border-top: 1.5px solid #ffffff;
       border-radius: var(--radius-lg);
       padding: 2.35rem 2.1rem;
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
+      contain: layout style paint;
       box-shadow: 
         0 24px 56px -12px rgba(14, 165, 233, 0.14),
         0 4px 16px -2px rgba(15, 23, 42, 0.03),
@@ -948,8 +1026,6 @@
       font-weight: 750;
       font-family: var(--font-mono);
       background: rgba(2, 132, 199, 0.08);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(56, 189, 248, 0.3);
       box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8), 0 2px 8px rgba(14, 165, 233, 0.08);
       padding: 0.4rem 0.85rem;
@@ -967,12 +1043,12 @@
       padding: 5rem 0;
       position: relative;
       scroll-margin-top: calc(80px + 1.5rem);
+      contain: layout style;
     }
 
     .waitlist-card {
-      background: rgba(255, 255, 255, 0.78);
-      backdrop-filter: blur(32px) saturate(190%) contrast(102%);
-      -webkit-backdrop-filter: blur(32px) saturate(190%) contrast(102%);
+      background: rgba(255, 255, 255, 0.82);
+      contain: layout style paint;
       border-radius: var(--radius-xl);
       padding: clamp(2.5rem, 4.5vw, 3.5rem) clamp(1.5rem, 4vw, 3.25rem);
       color: var(--slate-900);
@@ -1006,15 +1082,13 @@
       align-items: center;
       gap: 0.65rem;
       padding: 0.45rem 1.25rem;
-      background: rgba(255, 255, 255, 0.88);
+      background: rgba(255, 255, 255, 0.92);
       border: 1px solid rgba(255, 255, 255, 0.95);
       border-top: 1.5px solid #ffffff;
       border-radius: var(--radius-pill);
       font-size: 0.8rem;
       color: #1e293b;
       margin-bottom: 1.5rem;
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
       box-shadow: 0 4px 16px -2px rgba(14, 165, 233, 0.12), inset 0 1.5px 1.5px #ffffff, inset 0 -1px 2px rgba(186, 230, 253, 0.25);
     }
 
@@ -1025,11 +1099,13 @@
       background: #10b981;
       box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
       animation: liveDotPulse 2s infinite ease-in-out;
+      will-change: transform, opacity;
+      transform: translateZ(0);
     }
 
     @keyframes liveDotPulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.45; transform: scale(0.85); }
+      0%, 100% { opacity: 1; transform: translateZ(0) scale(1); }
+      50% { opacity: 0.45; transform: translateZ(0) scale(0.85); }
     }
 
     .views-metric strong {
@@ -1079,14 +1155,13 @@
     }
 
     .membership-tier-card {
-      background: rgba(255, 255, 255, 0.78);
-      backdrop-filter: blur(28px) saturate(190%) contrast(102%);
-      -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%);
+      background: rgba(255, 255, 255, 0.84);
       border: 1px solid rgba(255, 255, 255, 0.9);
       border-top: 1.5px solid #ffffff;
       border-radius: var(--radius-lg);
       padding: 1.75rem 1.45rem;
       cursor: pointer;
+      contain: layout style;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
       display: flex;
@@ -1341,8 +1416,6 @@
       cursor: pointer;
       position: relative;
       overflow: hidden;
-      backdrop-filter: blur(28px) saturate(200%);
-      -webkit-backdrop-filter: blur(28px) saturate(200%);
       box-shadow: 
         0 18px 44px -8px rgba(14, 165, 233, 0.38),
         0 4px 14px rgba(37, 99, 235, 0.12),
@@ -1418,8 +1491,6 @@
       margin-top: 1.25rem;
       text-align: center;
       animation: fadeIn 0.4s ease;
-      backdrop-filter: blur(28px) saturate(190%);
-      -webkit-backdrop-filter: blur(28px) saturate(190%);
       box-shadow: 0 24px 56px -12px rgba(14, 165, 233, 0.22), inset 0 2px 2px #ffffff;
     }
 
@@ -1610,9 +1681,8 @@
        FOOTER
        ============================================================= */
     footer.site-footer {
-      background: rgba(255, 255, 255, 0.72);
-      backdrop-filter: blur(28px) saturate(190%);
-      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      background: rgba(255, 255, 255, 0.78);
+      contain: layout style paint;
       border-top: 1px solid rgba(255, 255, 255, 0.9);
       padding: 3.5rem 0 calc(2.5rem + var(--sab));
       position: relative;
@@ -2189,7 +2259,7 @@
 
         <!-- Visionary Liquid Glass Headline -->
         <h1 class="hero-title">
-          The Next Paradigm in <span class="gradient-text">Intelligent Biometric Mapping</span>
+          The Next Paradigm in <span class="gradient-text" data-text="Intelligent Biometric Mapping">Intelligent Biometric Mapping</span>
         </h1>
 
         <!-- Subtitle -->
@@ -2328,7 +2398,7 @@
           <!-- Live Site View Counter Banner -->
           <div class="live-views-banner" id="live-views-container">
             <span class="live-status-dot"></span>
-            <span class="views-metric"><strong id="site-views-counter">2,156</strong> Site Visitors</span>
+            <span class="views-metric"><strong id="site-views-counter">2,393</strong> Site Visitors</span>
             <span class="views-divider">•</span>
             <span class="views-subtext">CLINLO Wellness Center Pre-Orders Live</span>
           </div>
@@ -2548,13 +2618,57 @@
       } catch (e) {}
     }
 
+    function postStudioScrollingToFrame(scrolling) {
+      try {
+        const iframe = document.getElementById('clinlo-3d-frame');
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({
+            type: 'STUDIO_SCROLLING',
+            scrolling: !!scrolling
+          }, '*');
+        }
+      } catch (e) {}
+    }
+
     window.addEventListener('scroll', () => {
-      isPageScrolling = true;
+      if (!isPageScrolling) {
+        isPageScrolling = true;
+        document.body.classList.add('is-scrolling');
+        postStudioScrollingToFrame(true);
+      }
       if (scrollIdleTimer) clearTimeout(scrollIdleTimer);
       scrollIdleTimer = setTimeout(() => {
         isPageScrolling = false;
-      }, 150);
+        document.body.classList.remove('is-scrolling');
+        postStudioScrollingToFrame(false);
+      }, 110);
     }, { passive: true });
+
+    window.addEventListener('pointerdown', () => {
+      if (isPageScrolling) {
+        isPageScrolling = false;
+        if (scrollIdleTimer) { clearTimeout(scrollIdleTimer); scrollIdleTimer = null; }
+        document.body.classList.remove('is-scrolling');
+        postStudioScrollingToFrame(false);
+      }
+    }, { capture: true, passive: true });
+
+    document.addEventListener('click', (e) => {
+      const link = e.target && e.target.closest ? e.target.closest('a[href^="#"]') : null;
+      if (!link) return;
+      const href = link.getAttribute('href');
+      if (!href || href === '#' || href === '#!') return;
+      if (href === '#top') {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      const target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
 
     if ('IntersectionObserver' in window) {
       document.addEventListener('DOMContentLoaded', () => {
@@ -2567,6 +2681,16 @@
             });
           }, { threshold: 0.05 });
           visObserver.observe(studioCard);
+        }
+
+        const animTargets = document.querySelectorAll('.badge-pill, h1.hero-title, #hero-sound-toggle, .live-views-banner, footer.site-footer');
+        if (animTargets.length > 0) {
+          const animObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              entry.target.classList.toggle('is-offscreen', !entry.isIntersecting);
+            });
+          }, { threshold: 0.01 });
+          animTargets.forEach(el => animObserver.observe(el));
         }
       });
     }
@@ -2679,19 +2803,35 @@
     }
 
     // -------------------------------------------------------------
-    // MOUSE POINTER PARALLAX TO 3D AVATAR
+    // MOUSE POINTER PARALLAX TO 3D AVATAR (rAF-coalesced + 0.004 deadzone)
     // -------------------------------------------------------------
+    let pendingParentPointer = null;
+    let parentPointerRafId = 0;
+    let lastPostedNX = 0;
+    let lastPostedNY = 0;
     window.addEventListener('pointermove', (e) => {
       if (!isStudioVisible || isPageScrolling || e.pointerType === 'touch') return;
-      const iframe = document.getElementById('clinlo-3d-frame');
-      if (iframe && iframe.contentWindow) {
-        const nx = (e.clientX / window.innerWidth) * 2 - 1;
-        const ny = -(e.clientY / window.innerHeight) * 2 + 1;
-        iframe.contentWindow.postMessage({
-          type: 'POINTER_MOVE',
-          x: nx,
-          y: ny
-        }, '*');
+      pendingParentPointer = { x: e.clientX, y: e.clientY };
+      if (!parentPointerRafId) {
+        parentPointerRafId = requestAnimationFrame(() => {
+          parentPointerRafId = 0;
+          if (!pendingParentPointer || !isStudioVisible || isPageScrolling) return;
+          const pt = pendingParentPointer;
+          pendingParentPointer = null;
+          const nx = (pt.x / window.innerWidth) * 2 - 1;
+          const ny = -(pt.y / window.innerHeight) * 2 + 1;
+          if (Math.abs(nx - lastPostedNX) <= 0.004 && Math.abs(ny - lastPostedNY) <= 0.004) return;
+          lastPostedNX = nx;
+          lastPostedNY = ny;
+          const iframe = document.getElementById('clinlo-3d-frame');
+          if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage({
+              type: 'POINTER_MOVE',
+              x: nx,
+              y: ny
+            }, '*');
+          }
+        });
       }
     }, { passive: true });
 
@@ -3810,6 +3950,7 @@ Please confirm onboarding schedule and founding membership reservation.`
     }
 
     document.addEventListener('visibilitychange', () => {
+      document.body.classList.toggle('tab-hidden', document.hidden);
       const audio = document.getElementById('bg-audio');
       if (!audio) return;
       if (document.hidden) {

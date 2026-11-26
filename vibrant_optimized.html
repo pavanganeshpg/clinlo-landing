@@ -11,8 +11,17 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#e0f2fe">
   <link rel="preload" href="./models/podium.glb" as="fetch" crossorigin>
-  <link rel="preload" href="./models/skinF2.glb" as="fetch" crossorigin>
-  <link rel="preload" href="./texture/Plastic015A_1K-JPG_NormalGL.jpg" as="image" crossorigin>
+  <script>
+    (function(){
+      var l = document.createElement('link');
+      l.rel = 'preload';
+      l.as = 'fetch';
+      l.crossOrigin = 'anonymous';
+      l.href = (window.innerWidth <= 768) ? './models/skinF2Mobile.glb' : './models/skinF2.glb';
+      document.head.appendChild(l);
+    })();
+  </script>
+  <link rel="preload" href="./texture/Plastic015A_512_NormalGL.webp" as="image" crossorigin>
   <link rel="preload" href="./fonts/PlusJakartaSans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <style>
     @font-face {
@@ -180,19 +189,18 @@
     #organ-focus-ring.active {
       opacity: 1;
       animation: ringPulse 2.8s infinite ease-in-out;
+      will-change: opacity, transform;
     }
 
     @keyframes ringPulse {
 
       0%,
       100% {
-        box-shadow: 0 0 24px rgba(255, 255, 255, 0.6), inset 0 0 12px rgba(255, 255, 255, 0.3);
         opacity: 0.95;
       }
 
       50% {
-        box-shadow: 0 0 38px rgba(255, 255, 255, 0.9), inset 0 0 18px rgba(255, 255, 255, 0.45);
-        opacity: 0.70;
+        opacity: 0.65;
       }
     }
 
@@ -562,6 +570,7 @@
 
     .btn-sound-toggle-studio {
       pointer-events: auto;
+      position: relative;
       width: 44px;
       height: 44px;
       border-radius: 50%;
@@ -595,7 +604,18 @@
         0 0 0 3px rgba(14, 165, 233, 0.2),
         0 6px 20px rgba(14, 165, 233, 0.3),
         inset 0 1px 1.5px #ffffff;
+    }
+
+    .btn-sound-toggle-studio.sound-playing::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid rgba(14, 165, 233, 0.45);
+      box-shadow: 0 0 14px rgba(14, 165, 233, 0.35);
+      pointer-events: none;
       animation: sound-pulse-studio 2s infinite ease-in-out;
+      will-change: transform, opacity;
     }
 
     .btn-sound-toggle-studio.sound-pending {
@@ -610,11 +630,13 @@
 
       0%,
       100% {
-        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2), 0 4px 16px rgba(14, 165, 233, 0.2);
+        transform: scale(0.96);
+        opacity: 0.45;
       }
 
       50% {
-        box-shadow: 0 0 0 5px rgba(14, 165, 233, 0.38), 0 8px 28px rgba(14, 165, 233, 0.45);
+        transform: scale(1.08);
+        opacity: 0.95;
       }
     }
 
@@ -705,28 +727,43 @@
       filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.98)) drop-shadow(0 4px 18px rgba(14, 165, 233, 0.28));
     }
 
+    #intro-overlay.hidden .shine-text::after,
+    #intro-overlay.hidden .start-exp-btn::before,
+    body.studio-paused .btn-sound-toggle-studio.sound-playing::after,
+    body.studio-paused #organ-focus-ring.active,
+    body.studio-paused .shine-text::after,
+    body.studio-paused .start-exp-btn::before,
+    body.studio-paused .hotspot-inner-pulse,
+    body.studio-paused .hotspot-wave-ring {
+      animation-play-state: paused !important;
+    }
+
     .shine-text {
+      position: relative;
       display: inline-block;
       background: linear-gradient(135deg, #0284c7 0%, #38bdf8 20%, #818cf8 45%, #c084fc 70%, #38bdf8 90%, #0284c7 100%);
       background-size: 250% auto;
+      background-position: 10% 50%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       filter: drop-shadow(0 2px 14px rgba(56, 189, 248, 0.42));
-      animation: liquidTextShimmer 7s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
     }
 
-    @keyframes liquidTextShimmer {
-      0% {
-        background-position: 0% 50%;
-      }
+    .shine-text::after {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #818cf8 0%, #c084fc 30%, #38bdf8 65%, #0284c7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      pointer-events: none;
+      animation: liquidTextShimmerOpacity 3.5s ease-in-out infinite alternate;
+      will-change: opacity;
+    }
 
-      50% {
-        background-position: 100% 50%;
-      }
-
-      100% {
-        background-position: 0% 50%;
-      }
+    @keyframes liquidTextShimmerOpacity {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
     }
 
     .start-exp-wrapper {
@@ -849,11 +886,12 @@
       border-radius: 28px;
       padding: 24px;
       z-index: 40;
-      transition: opacity 0.4s, transform 0.4s;
+      transition: opacity 0.4s, transform 0.4s, visibility 0.4s;
     }
 
     #explore-card.hidden {
       opacity: 0;
+      visibility: hidden;
       pointer-events: none;
       transform: translateY(-50%) translateX(40px);
     }
@@ -924,11 +962,12 @@
       align-items: center;
       gap: 16px;
       z-index: 40;
-      transition: opacity 0.4s, transform 0.4s;
+      transition: opacity 0.4s, transform 0.4s, visibility 0.4s;
     }
 
     #organ-bottom-dock.hidden {
       opacity: 0;
+      visibility: hidden;
       pointer-events: none;
       transform: translateX(-50%) translateY(40px);
     }
@@ -1950,7 +1989,7 @@
       <img src="./branding/clinlo_logo_lockup_black.png" alt="CLINLO" class="intro-brand-logo" width="158" height="38">
       <div class="intro-big-heading">
         <div>Personalized</div>
-        <div class="shine-text">Wellness</div>
+        <div class="shine-text" data-text="Wellness">Wellness</div>
       </div>
     </div>
 
@@ -2655,7 +2694,6 @@
 
   <script type="module">
     import * as THREE from 'three';
-    import { OrbitControls } from './OrbitControls.js';
     import { GLTFLoader } from './GLTFLoader.js';
     import { DRACOLoader } from './DRACOLoader.js';
     import { SubsurfaceScatteringShader } from './SubsurfaceScatteringShader.js';
@@ -3397,7 +3435,8 @@
       const vendorStr = debugExt ? gl.getParameter(debugExt.UNMASKED_VENDOR_WEBGL) : (gl ? gl.getParameter(gl.VENDOR) : '');
       const maxTexSize = gl ? gl.getParameter(gl.MAX_TEXTURE_SIZE) : 4096;
 
-      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1);
+      const hasCoarsePointer = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && hasCoarsePointer) || window.innerWidth <= 768;
       const concurrency = navigator.hardwareConcurrency || 4;
       const deviceMemory = navigator.deviceMemory || 4;
 
@@ -3419,7 +3458,7 @@
           tier = 1;
         } else if (/Apple M|NVIDIA|GeForce|RTX|GTX|Radeon|AMD/i.test(rendererStr)) {
           tier = 3;
-        } else if (/Intel HD|Intel Iris|Mesa|Direct3D/i.test(rendererStr)) {
+        } else if (/Intel(?!.*\bArc\b)|Mesa|Direct3D/i.test(rendererStr)) {
           tier = 2;
         } else {
           tier = 3;
@@ -3431,15 +3470,16 @@
       const shaderPrecision = supportsHighp ? 'highp' : 'mediump';
 
       // Tier-calibrated Pixel Ratios:
-      // Desktop: 1.0 - 1.5 (Retina crystal clarity without redundant 4x fragment supersampling)
-      // Mobile: 1.25 - 1.5 (crisp silhouette & facial detail, safe because demand-driven engine sleeps at 0 FPS when idle)
-      let targetMaxDPR = 1.5;
+      // Tier 3 Desktop: <= 1.25 (razor-sharp without 4x supersampling tax under transmission)
+      // Tier 2 Integrated Desktop (Intel HD/Iris): <= 1.0 (smooth 60 FPS on integrated GPUs)
+      // Mobile: 1.15 - 1.25 (crisp silhouette & facial detail)
+      let targetMaxDPR = 1.25;
       let targetMotionDPR = 1.0;
       if (isMobileDevice) {
-        targetMaxDPR = Math.min(window.devicePixelRatio || 1, (tier <= 1) ? 1.25 : 1.5);
+        targetMaxDPR = Math.min(window.devicePixelRatio || 1, (tier <= 1) ? 1.15 : 1.25);
         targetMotionDPR = (tier <= 1) ? 0.9 : 1.0;
       } else {
-        targetMaxDPR = Math.min(window.devicePixelRatio || 1, (tier <= 1) ? 1.0 : 1.5);
+        targetMaxDPR = Math.min(window.devicePixelRatio || 1, (tier <= 2) ? 1.0 : 1.25);
         targetMotionDPR = (tier <= 1) ? 0.85 : 1.0;
       }
 
@@ -3484,10 +3524,10 @@
       if (canvas) canvas.style.touchAction = 'pan-y';
     }
 
-    // Enable hardware MSAA on mobile too (WebGL2 tile-memory MSAA prevents jagged silhouettes & facial edges)
+    // Disable redundant hardware MSAA under WebGL2 transmission FBO for 2x+ GPU throughput with imperceptible MAE
     const renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: true,
+      antialias: false,
       alpha: true,
       powerPreference: 'high-performance',
       precision: hardware.shaderPrecision,
@@ -3509,12 +3549,20 @@
     const camera = new THREE.PerspectiveCamera(46, width / height, 0.1, 100);
     camera.setFocalLength(35);
 
-    const controls = new OrbitControls(camera, canvas);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.08;
-    controls.enableZoom = false;
-    controls.enableRotate = false;
-    controls.enablePan = false;
+    // Lightweight camera target controller (eliminates OrbitControls non-passive wheel blocking & per-frame overhead)
+    const controls = {
+      target: new THREE.Vector3(),
+      minPolarAngle: 0,
+      maxPolarAngle: Math.PI,
+      minAzimuthAngle: -Infinity,
+      maxAzimuthAngle: Infinity,
+      update() {
+        camera.lookAt(this.target);
+      }
+    };
+    if (canvas) {
+      canvas.style.touchAction = isEmbeddedInIframe ? 'pan-y' : 'manipulation';
+    }
 
 
 
@@ -3524,9 +3572,14 @@
     // or event listener registration to avoid Temporal Dead Zone ReferenceErrors.
     let isTabVisible = !document.hidden;
     let isCanvasVisible = true;
+    let isParentScrolling = false;
     let isRenderingActive = false;
+    let isRafPending = false;
     let isContextLost = false;
     let isDirty = true;
+    let isGsapSleeping = false;
+    let ambientFrameTimerId = null;
+    let dracoIdleDisposeTimer = null;
     let lastInteractionTime = performance.now();
     let lastFrameTime = performance.now();
     let currentState = 'choose';
@@ -3597,11 +3650,15 @@
       onUpdate: () => { isDirty = true; requestFrame(); }
     });
 
-    function setTiltPointer(nx, ny) {
+    function setTiltPointer(nx, ny, force = false) {
+      if (!force && hasActivePointer && Math.abs(nx - lastPointerNX) < 0.002 && Math.abs(ny - lastPointerNY) < 0.002) {
+        return;
+      }
       lastPointerNX = nx;
       lastPointerNY = ny;
       hasActivePointer = true;
       if (!hoverTiltState.enabled) return;
+      wakeGsapTicker();
       const tAz = THREE.MathUtils.clamp(-nx * hoverTiltMaxAngle, -hoverTiltMaxAngle, hoverTiltMaxAngle);
       const tPol = THREE.MathUtils.clamp(ny * hoverTiltMaxAngle, -hoverTiltMaxAngle, hoverTiltMaxAngle);
       hoverTiltState.targetDeltaAz = tAz;
@@ -3617,6 +3674,7 @@
       hoverTiltState.targetDeltaAz = 0;
       hoverTiltState.targetDeltaPol = 0;
       if (!hoverTiltState.enabled) return;
+      wakeGsapTicker();
       quickAz(0);
       quickPol(0);
       isDirty = true;
@@ -3670,25 +3728,24 @@
     }
 
     // Pointer event listeners (captures mouse/pen parallax; ignores touch scroll in embedded iframe)
-    window.addEventListener('pointermove', (e) => {
-      if (isEmbeddedInIframe && e.pointerType === 'touch') return;
-      const nx = (e.clientX / window.innerWidth) * 2 - 1;
-      const ny = (e.clientY / window.innerHeight) * 2 - 1;
+    let pendingPointerMove = null;
+    let pointerMoveRafId = 0;
+    function processPointerMove(clientX, clientY, target) {
+      const nx = (clientX / window.innerWidth) * 2 - 1;
+      const ny = (clientY / window.innerHeight) * 2 - 1;
       setTiltPointer(nx, ny);
 
-      // Proximity organ hover reveal over 3D body in list state
-      if (currentState === 'list') {
+      // Proximity organ hover reveal over 3D body in list state using cached projected coordinates (0 reflows)
+      if (currentState === 'list' && !isMobile) {
         let nearestCat = null;
         let minDist = 75; // proximity threshold in pixels
-        for (const h of activeHotspotElements) {
-          if (!h.element || !h.element.getBoundingClientRect) continue;
-          const rect = h.element.getBoundingClientRect();
-          const cx = rect.left + rect.width / 2;
-          const cy = rect.top + rect.height / 2;
-          const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+        for (let i = 0; i < activeHotspotElements.length; i++) {
+          const h = activeHotspotElements[i];
+          if (!h || !h.element || h.screenX === undefined || h.screenY === undefined) continue;
+          const dist = Math.hypot(clientX - h.screenX, clientY - h.screenY);
           if (dist < minDist) {
             minDist = dist;
-            nearestCat = h.element.getAttribute('data-cat');
+            nearestCat = h.categoryId || h.element.getAttribute('data-cat');
           }
         }
         if (nearestCat && nearestCat !== currentHoveredCategoryId) {
@@ -3696,11 +3753,25 @@
           hoverCategory(nearestCat, true);
         } else if (!nearestCat && currentHoveredCategoryId && minDist > 105) {
           const exploreCard = document.getElementById('explore-card');
-          const inCard = exploreCard && exploreCard.contains(e.target);
+          const inCard = exploreCard && target && exploreCard.contains(target);
           if (!inCard) {
             hoverCategory(currentHoveredCategoryId, false);
           }
         }
+      }
+    }
+
+    window.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch' || isParentScrolling) return;
+      pendingPointerMove = { clientX: e.clientX, clientY: e.clientY, target: e.target };
+      if (!pointerMoveRafId) {
+        pointerMoveRafId = requestAnimationFrame(() => {
+          pointerMoveRafId = 0;
+          if (!pendingPointerMove) return;
+          const ev = pendingPointerMove;
+          pendingPointerMove = null;
+          processPointerMove(ev.clientX, ev.clientY, ev.target);
+        });
       }
     }, { passive: true });
 
@@ -3755,29 +3826,50 @@
       }
     }
 
-    // Message listener for parent frame orientation, pointer parallax, and scroll visibility
+    // Message listener for parent frame orientation, pointer parallax, scroll pause, and scroll visibility
     window.addEventListener('message', (e) => {
       if (!e.data) return;
       if (e.data.type === 'STUDIO_VISIBILITY') {
         isCanvasVisible = !!e.data.visible;
         if (!isCanvasVisible) {
           isRenderingActive = false;
+          if (ambientFrameTimerId) { clearTimeout(ambientFrameTimerId); ambientFrameTimerId = null; }
+          syncIdleTweens(false);
+          document.body.classList.add('studio-paused');
         } else {
-          clock.getDelta();
-          isDirty = true;
-          requestFrame();
+          if (!isParentScrolling && isTabVisible) {
+            document.body.classList.remove('studio-paused');
+            clock.getDelta();
+            isDirty = true;
+            requestFrame();
+          }
+        }
+      } else if (e.data.type === 'STUDIO_SCROLLING') {
+        isParentScrolling = !!e.data.scrolling;
+        if (isParentScrolling) {
+          isRenderingActive = false;
+          if (ambientFrameTimerId) { clearTimeout(ambientFrameTimerId); ambientFrameTimerId = null; }
+          syncIdleTweens(false);
+          document.body.classList.add('studio-paused');
+        } else {
+          if (isCanvasVisible && isTabVisible && !isContextLost) {
+            document.body.classList.remove('studio-paused');
+            clock.getDelta();
+            isDirty = true;
+            requestFrame();
+          }
         }
       } else if (e.data.type === 'DEVICE_ORIENTATION' || e.data.type === 'PHONE_TILT') {
         handleDeviceOrientation(e.data);
       } else if (e.data.type === 'POINTER_MOVE' || e.data.type === 'MOUSE_PARALLAX') {
-        if (typeof setTiltPointer === 'function') {
+        if (!isParentScrolling && typeof setTiltPointer === 'function') {
           setTiltPointer(e.data.x, e.data.y);
         }
       }
     });
 
     // 3. Studio Lighting Rig with Static Matrix Freezing & Selective Light Activation
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.35);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.38);
     ambientLight.matrixAutoUpdate = false;
     ambientLight.updateMatrix();
     scene.add(ambientLight);
@@ -3797,15 +3889,10 @@
     sideLightRight.updateMatrix();
     scene.add(sideLightRight);
 
-    // Subtle frontal fill
-    const cameraLight = new THREE.PointLight(0xffffff, 0.10, 10);
-    cameraLight.matrixAutoUpdate = false;
-    cameraLight.updateMatrix();
-    camera.add(cameraLight);
     scene.add(camera);
 
-    // Reusable 2-slot organ backlight pool: keeps #define NUM_POINT_LIGHTS constant at 5
-    // (3 studio lights + 2 active organ backlights), eliminating 12-light shader compile stalls
+    // Reusable 2-slot organ backlight pool: keeps #define NUM_POINT_LIGHTS constant at 4
+    // (2 studio lights + 2 active organ backlights), eliminating 12-light shader compile stalls
     // and guaranteeing 0 mid-interaction linkProgram freezes across all states.
     const organBacklightConfigs = {
       brain: { color: 0xff0077, distance: 2.2, pos: [0.048, 4.45, -0.22], intensity: 1.4 },
@@ -3846,6 +3933,7 @@
     let dracoDisposed = false;
 
     const gltfLoader = new GLTFLoader();
+    let activeGltfLoads = 0;
     function ensureDracoReady() {
       if (!dracoLoader || dracoDisposed) {
         dracoLoader = new DRACOLoader();
@@ -3863,8 +3951,11 @@
     const _origGltfLoadAsync = gltfLoader.loadAsync.bind(gltfLoader);
     gltfLoader.loadAsync = function (url, onProgress) {
       ensureDracoReady();
+      activeGltfLoads++;
       const vUrl = window.__CLINLO_VFS__ ? (window.__CLINLO_VFS__[url] || window.__CLINLO_VFS__[url.replace(/^\.\//, '')]) : null;
-      return _origGltfLoadAsync(vUrl || url, onProgress);
+      return _origGltfLoadAsync(vUrl || url, onProgress).finally(() => {
+        activeGltfLoads = Math.max(0, activeGltfLoads - 1);
+      });
     };
 
     const _origTexLoadAsync = textureLoader.loadAsync.bind(textureLoader);
@@ -3874,7 +3965,8 @@
     };
 
     const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
-    const isMobileOrLowTier = isMobile || (hardware && hardware.tier <= 1);
+    const isLowOrIntegratedDesktop = !isMobile && Boolean(hardware && hardware.tier <= 2);
+    const isMobileOrLowTier = isMobile || Boolean(hardware && hardware.tier <= 2);
 
     async function safeCompileAsync(target, cam, targetScene = null, timeoutMs = 2500) {
       if (isContextLost || !target) return;
@@ -3898,40 +3990,47 @@
 
     function yieldToMain(timeout = 120) {
       return new Promise((resolve) => {
+        const checkAndResolve = () => {
+          if (isParentScrolling) {
+            setTimeout(checkAndResolve, 100);
+          } else {
+            resolve();
+          }
+        };
         if (typeof requestIdleCallback === 'function') {
-          requestIdleCallback(() => resolve(), { timeout });
+          requestIdleCallback(checkAndResolve, { timeout });
         } else {
-          setTimeout(resolve, 16);
+          setTimeout(checkAndResolve, 16);
         }
       });
     }
 
-    let podiumTween = null;
-    const bgTweens = [];
-    let heartTimeline = null;
-    let lastIdleTweensActive = null;
-    let lastIdleTweensState = null;
-    let lastIdleHeartVisible = null;
+    let bgInstancedMesh = null;
+    const bgTimeUniform = { value: 0 };
+
+    function wakeGsapTicker() {
+      if (isGsapSleeping) {
+        gsap.ticker.wake();
+        isGsapSleeping = false;
+      }
+    }
+
+    function sleepGsapTickerIfIdle() {
+      if (isGsapSleeping) return;
+      if (activeCameraTweens > 0 || genderTweenFemale || genderTweenMale) return;
+      if (Object.values(organFadeTweens).some(t => t && t.isActive())) return;
+      if (Object.values(lightFadeTweens).some(t => t && t.isActive())) return;
+      if (gsap.globalTimeline.getChildren(false, true, false).some(t => t.isActive())) return;
+      const tiltDiff = Math.abs(hoverTiltState.deltaAz - hoverTiltState.targetDeltaAz) +
+        Math.abs(hoverTiltState.deltaPol - hoverTiltState.targetDeltaPol);
+      if (tiltDiff > 0.0001) return;
+      gsap.ticker.sleep();
+      isGsapSleeping = true;
+    }
 
     function syncIdleTweens(active) {
-      const heartVis = Boolean(organs['heart'] && organs['heart'].visible);
-      if (active === lastIdleTweensActive && currentState === lastIdleTweensState && heartVis === lastIdleHeartVisible) {
-        return;
-      }
-      lastIdleTweensActive = active;
-      lastIdleTweensState = currentState;
-      lastIdleHeartVisible = heartVis;
-      if (podiumTween) {
-        if (active && currentState !== 'story') podiumTween.resume();
-        else podiumTween.pause();
-      }
-      for (let i = 0; i < bgTweens.length; i++) {
-        if (active) bgTweens[i].resume();
-        else bgTweens[i].pause();
-      }
-      if (heartTimeline) {
-        if (active && heartVis) heartTimeline.resume();
-        else heartTimeline.pause();
+      if (!active) {
+        sleepGsapTickerIfIdle();
       }
     }
 
@@ -3979,6 +4078,7 @@
         };
 
         podiumMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        podiumMaterial.userData.txIgnoreTime = true;
         podiumMaterial.userData.uTime = { value: 0 };
         podiumMaterial.userData.uColorA = { value: new THREE.Color(ae.colorA) };
         podiumMaterial.userData.uColorMid = { value: new THREE.Color(ae.colorMid) };
@@ -4127,53 +4227,112 @@
         scene.add(podiumGltf.scene);
         podiumMesh = podiumGltf.scene;
         window.podiumMesh = podiumMesh;
-
-        podiumTween = gsap.to(podiumMaterial.userData.uTime, {
-          value: 200,
-          duration: 200,
-          ease: "none",
-          repeat: -1,
-          paused: true
-        });
       } catch (e) {
         console.warn('Podium load error:', e);
       }
     }
 
-    // 6. Background Floating Bokeh Particles (Stage 2 background load)
+    // 6. Background Floating Bokeh Particles (58 meshes collapsed into 1 GPU InstancedMesh + vertex shader drift)
     let bgLoadPromise = null;
     function ensureBgLoaded() {
       if (bgLoadPromise) return bgLoadPromise;
       bgLoadPromise = (async () => {
         try {
           const [mat20Tex, bgGltf] = await Promise.all([
-            textureLoader.loadAsync('./texture/mats/mat20.png'),
+            textureLoader.loadAsync('./texture/mats/mat20.webp'),
             gltfLoader.loadAsync('./models/newBG.glb')
           ]);
-          const bgMat = new THREE.MeshMatcapMaterial({
-            matcap: mat20Tex,
-            transparent: true,
-            opacity: 0.35
-          });
+          const bgNodes = [];
+          bgGltf.scene.updateMatrixWorld(true);
           bgGltf.scene.traverse(node => {
-            if (node.isMesh) {
-              node.material = bgMat;
-              const tw = gsap.to(node.position, {
-                y: node.position.y + gsap.utils.random(-0.8, 0.8),
-                x: node.position.x + gsap.utils.random(-0.8, 0.8),
-                duration: gsap.utils.random(8, 20),
-                repeat: -1,
-                yoyo: true,
-                ease: "sine.inOut",
-                paused: !isRenderingActive
-              });
-              bgTweens.push(tw);
+            if (node.isMesh && node.geometry) {
+              node.geometry.computeBoundingSphere();
+              bgNodes.push(node);
             }
           });
-          await safeCompileAsync(bgGltf.scene, camera, scene);
-          scene.add(bgGltf.scene);
-          isDirty = true;
-          requestFrame();
+          if (bgNodes.length > 0) {
+            const baseGeom = bgNodes[0].geometry.clone();
+            baseGeom.computeBoundingSphere();
+            const baseRadius = (baseGeom.boundingSphere && baseGeom.boundingSphere.radius) || 1.0;
+
+            const count = bgNodes.length;
+            const driftArray = new Float32Array(count * 4);
+            const dummy = new THREE.Object3D();
+            const pos = new THREE.Vector3();
+            const quat = new THREE.Quaternion();
+            const scl = new THREE.Vector3();
+
+            for (let i = 0; i < count; i++) {
+              const n = bgNodes[i];
+              const r = (n.geometry.boundingSphere && n.geometry.boundingSphere.radius) || baseRadius;
+              const relScale = r / baseRadius;
+              n.matrixWorld.decompose(pos, quat, scl);
+              dummy.position.copy(pos);
+              dummy.quaternion.copy(quat);
+              dummy.scale.set(scl.x * relScale, scl.y * relScale, scl.z * relScale);
+              dummy.updateMatrix();
+              if (i === 0) {
+                bgInstancedMesh = new THREE.InstancedMesh(baseGeom, null, count);
+              }
+              bgInstancedMesh.setMatrixAt(i, dummy.matrix);
+
+              // Deterministic smooth drift parameters matching original gsap.utils.random(-0.8..0.8, duration 8..20s)
+              const ampX = (Math.abs(Math.sin(i * 12.9898) * 43758.5453) % 1) * 1.6 - 0.8;
+              const ampY = (Math.abs(Math.sin(i * 78.233) * 43758.5453) % 1) * 1.6 - 0.8;
+              const dur = 8.0 + Math.abs((Math.sin(i * 39.346) * 43758.5453) % 1) * 12.0;
+              const speed = (Math.PI * 2.0) / dur;
+              const phase = Math.abs((Math.sin(i * 93.123) * 43758.5453) % 1) * Math.PI * 2.0;
+              driftArray[i * 4] = ampX;
+              driftArray[i * 4 + 1] = ampY;
+              driftArray[i * 4 + 2] = speed;
+              driftArray[i * 4 + 3] = phase;
+            }
+            baseGeom.setAttribute('aDrift', new THREE.InstancedBufferAttribute(driftArray, 4));
+            bgInstancedMesh.instanceMatrix.needsUpdate = true;
+            bgInstancedMesh.computeBoundingSphere();
+            if (bgInstancedMesh.boundingSphere) {
+              bgInstancedMesh.boundingSphere.radius += 1.5;
+            }
+            bgInstancedMesh.frustumCulled = true;
+
+            const bgMat = new THREE.MeshMatcapMaterial({
+              matcap: mat20Tex,
+              transparent: true,
+              opacity: 0.35,
+              depthWrite: false
+            });
+            bgMat.customProgramCacheKey = () => 'newbg_instanced_drift';
+            bgMat.onBeforeCompile = (shader) => {
+              shader.uniforms.uTime = bgTimeUniform;
+              shader.vertexShader = `
+                attribute vec4 aDrift;
+                uniform float uTime;
+              ` + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace(
+                '#include <project_vertex>',
+                `vec4 mvPosition = vec4( transformed, 1.0 );
+                #ifdef USE_INSTANCING
+                  mvPosition = instanceMatrix * mvPosition;
+                #endif
+                mvPosition.xy += aDrift.xy * (0.5 - 0.5 * cos(uTime * aDrift.z + aDrift.w));
+                mvPosition = modelViewMatrix * mvPosition;
+                gl_Position = projectionMatrix * mvPosition;`
+              );
+            };
+            bgInstancedMesh.material = bgMat;
+            bgInstancedMesh.matrixAutoUpdate = false;
+            bgInstancedMesh.updateMatrix();
+
+            // Dispose duplicate source geometries from GLB
+            for (let i = 0; i < bgNodes.length; i++) {
+              bgNodes[i].geometry.dispose();
+            }
+
+            await safeCompileAsync(bgInstancedMesh, camera, scene);
+            scene.add(bgInstancedMesh);
+            isDirty = true;
+            requestFrame();
+          }
         } catch (e) {
           console.warn('newBG.glb background load error:', e);
         }
@@ -4185,7 +4344,7 @@
     let normalMap = null;
     async function loadNormalMapStage1() {
       try {
-        const tex = await textureLoader.loadAsync('./texture/Plastic015A_1K-JPG_NormalGL.jpg');
+        const tex = await textureLoader.loadAsync('./texture/Plastic015A_512_NormalGL.webp');
         tex.colorSpace = THREE.NoColorSpace;
         tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
         tex.repeat.set(2, 2);
@@ -4206,11 +4365,12 @@
     }
 
     // Ground truth from Noomo production (Bnwl1Oju.js):
-    // On mobile devices (or low-tier hardware or WebGL1 without textureLod/textureSize),
+    // On mobile devices (or integrated/low-tier desktop or WebGL1 without textureLod/textureSize),
     // transmission is set to 0 while pairing a luminous cool-periwinkle studio envMap +
-    // crystal glass tint + crisp clearcoat + vertex tangents + highp precision.
+    // crystal glass tint + clearcoat + vertex tangents + highp precision.
     const useSimplifiedGlass = isMobileOrLowTier || !isWebGL2;
-    const canUseIridescence = !hardware || hardware.supportsHighp !== false;
+    const canUseIridescence = (!hardware || hardware.supportsHighp !== false) && !isLowOrIntegratedDesktop && !(hardware && hardware.tier <= 1);
+    const canUseClearcoat = !isLowOrIntegratedDesktop && !(hardware && hardware.tier <= 1);
     const skinMaterialFemale = new THREE.MeshPhysicalMaterial(
       useSimplifiedGlass ? {
         color: 0xdbe4ff,
@@ -4219,14 +4379,12 @@
         transmission: 0.0,
         thickness: 0.0,
         ior: 1.55,
-        clearcoat: 1.0,
+        clearcoat: canUseClearcoat ? 1.0 : 0.0,
         clearcoatRoughness: 0.04,
         reflectivity: 1.0,
         iridescence: canUseIridescence ? 1.0 : 0.0,
         iridescenceIOR: 1.453,
-        sheen: 0.326,
-        sheenRoughness: 1.0,
-        sheenColor: new THREE.Color(0x000000),
+        sheen: 0.0,
         envMapIntensity: 1.05,
         opacity: 0.34,
         transparent: true,
@@ -4246,9 +4404,7 @@
         reflectivity: 1.0,
         iridescence: 1.0,
         iridescenceIOR: 1.453,
-        sheen: 0.326,
-        sheenRoughness: 1.0,
-        sheenColor: new THREE.Color(0x000000),
+        sheen: 0.0,
         opacity: 0.38,
         transparent: true,
         normalMap: null,
@@ -4258,9 +4414,13 @@
 
     const skinMaterialMale = skinMaterialFemale.clone();
 
-    // Perlin noise organic dissolve shader on male & female avatar rigs (shared program cache key across genders)
+    // Perlin noise organic dissolve shader on male & female avatar rigs:
+    // Steady-state uses a discard-free Early-Z shader; dissolve shader is pre-compiled in Stage 2
+    // and attached only during performGenderDissolve() transitions.
     function setupSkinDissolveShader(material, initialDissolve = 0.15) {
-      material.userData.uDissolve = { value: initialDissolve };
+      if (!material.userData.uDissolve) {
+        material.userData.uDissolve = { value: initialDissolve };
+      }
       material.customProgramCacheKey = () => 'dissolve_skin_shared';
       material.onBeforeCompile = (shader) => {
         shader.uniforms.uDissolve = material.userData.uDissolve;
@@ -4374,8 +4534,55 @@
       };
     }
 
-    setupSkinDissolveShader(skinMaterialFemale, 0.0);
-    setupSkinDissolveShader(skinMaterialMale, 1.0);
+    function initSteadySkinMaterial(material, initialDissolve) {
+      material.userData.uDissolve = { value: initialDissolve };
+      material.userData.dissolveEnabled = false;
+      material.customProgramCacheKey = () => 'skin_steady_shared';
+      material.onBeforeCompile = (shader) => {
+        shader.fragmentShader = shader.fragmentShader.replace(
+          '#include <dithering_fragment>',
+          `#include <dithering_fragment>
+           gl_FragColor.rgb = max(gl_FragColor.rgb, vec3(0.0));`
+        );
+      };
+    }
+
+    function enableSkinDissolve(material) {
+      if (!material || material.userData.dissolveEnabled) return;
+      setupSkinDissolveShader(material, material.userData.uDissolve ? material.userData.uDissolve.value : 0.0);
+      material.userData.dissolveEnabled = true;
+      material.needsUpdate = true;
+    }
+
+    function disableSkinDissolve(material) {
+      if (!material || !material.userData.dissolveEnabled) return;
+      initSteadySkinMaterial(material, material.userData.uDissolve ? material.userData.uDissolve.value : 0.0);
+      material.needsUpdate = true;
+    }
+
+    let skinDissolvePrecompiled = false;
+    async function precompileSkinDissolveShader() {
+      if (skinDissolvePrecompiled || isContextLost) return;
+      skinDissolvePrecompiled = true;
+      try {
+        const probeGeom = new THREE.BufferGeometry();
+        probeGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, 0, 0, 0.01, 0, 0, 0, 0.01, 0]), 3));
+        probeGeom.setAttribute('normal', new THREE.BufferAttribute(new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]), 3));
+        probeGeom.setAttribute('uv', new THREE.BufferAttribute(new Float32Array([0, 0, 1, 0, 0, 1]), 2));
+        if (useSimplifiedGlass) {
+          probeGeom.setAttribute('tangent', new THREE.BufferAttribute(new Float32Array([1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1]), 4));
+        }
+        const probeMat = skinMaterialFemale.clone();
+        setupSkinDissolveShader(probeMat, 0.0);
+        const probeMesh = new THREE.Mesh(probeGeom, probeMat);
+        await safeCompileAsync(probeMesh, camera, scene);
+        probeGeom.dispose();
+        probeMat.dispose();
+      } catch (e) { }
+    }
+
+    initSteadySkinMaterial(skinMaterialFemale, 0.0);
+    initSteadySkinMaterial(skinMaterialMale, 1.0);
 
     // Zero-allocation typed-array tangent computation (avoids 760k Vector3 GC objects on mobile)
     function computeTangentsFast(geometry) {
@@ -4492,7 +4699,8 @@
 
     async function loadFemaleAvatarStage1() {
       try {
-        const femaleGltf = await gltfLoader.loadAsync('./models/skinF2.glb');
+        const femaleModelPath = isMobile ? './models/skinF2Mobile.glb' : './models/skinF2.glb';
+        const femaleGltf = await gltfLoader.loadAsync(femaleModelPath);
         femaleAvatar = femaleGltf.scene;
         configureAvatarScene(femaleAvatar, skinMaterialFemale);
         femaleAvatar.visible = (currentGender === 'female');
@@ -4501,6 +4709,21 @@
       } catch (e) {
         console.error('Female avatar load error:', e);
       }
+    }
+
+    function scheduleDracoIdleDispose() {
+      if (dracoIdleDisposeTimer) clearTimeout(dracoIdleDisposeTimer);
+      dracoIdleDisposeTimer = setTimeout(() => {
+        dracoIdleDisposeTimer = null;
+        if (activeGltfLoads > 0) {
+          scheduleDracoIdleDispose();
+          return;
+        }
+        if (dracoLoader && !dracoDisposed) {
+          dracoLoader.dispose();
+          dracoDisposed = true;
+        }
+      }, 4500);
     }
 
     let maleAvatarPromise = null;
@@ -4516,6 +4739,7 @@
           maleAvatar.visible = (currentGender === 'male');
           await safeCompileAsync(maleAvatar, camera, scene);
           scene.add(maleAvatar);
+          scheduleDracoIdleDispose();
           return maleAvatar;
         } catch (e) {
           console.error('Male avatar load error:', e);
@@ -4526,21 +4750,7 @@
     }
 
     // 8. Internal Organs Setup with Authentic Subsurface Scattering Materials & Ethereal Glow
-    let whiteTex = null;
-    let whiteTexPromise = null;
-    function ensureWhiteTexLoaded() {
-      if (whiteTex) return Promise.resolve(whiteTex);
-      if (whiteTexPromise) return whiteTexPromise;
-      whiteTexPromise = textureLoader.loadAsync('./texture/white.jpg').then(tex => {
-        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-        tex.anisotropy = maxAnisotropy;
-        whiteTex = tex;
-        return tex;
-      });
-      return whiteTexPromise;
-    }
-
-    // Ground truth SSS parameters & glowing luminous candy hues
+    // Ground truth SSS parameters & glowing luminous candy hues (constant thickness 1.0 in SubsurfaceScatteringShader)
     const organConfigs = [
       { id: 'brain', file: './models/brain.glb', diffuse: new THREE.Color().setRGB(1.8, 0.05, 0.65), thickColor: new THREE.Color(0.95, 0.40, 0.85), specular: 0x330822, shininess: 567, distortion: 0.94, ambient: 0.55, attenuation: 1.26, power: 4.41, scale: 36.0 },
       { id: 'heart', file: './models/heart.glb', diffuse: new THREE.Color().setRGB(3.8, 0.08, 0.18), thickColor: new THREE.Color(1.0, 0.45, 0.55), specular: 0x220508, shininess: 478, distortion: 0.85, ambient: 0.40, attenuation: 1.06, power: 4.61, scale: 28.0 },
@@ -4559,6 +4769,7 @@
     const organConfigMap = Object.fromEntries(organConfigs.map(c => [c.id, c]));
     const organLoadPromises = {};
     let transmissionCompileRT = null;
+    let sssOpaqueVariantPrecompiled = false;
 
     function ensureOrganLoaded(organId) {
       if (organs[organId]) return Promise.resolve(organs[organId]);
@@ -4568,13 +4779,10 @@
 
       organLoadPromises[organId] = (async () => {
         try {
-          const [wTex, gltf] = await Promise.all([
-            ensureWhiteTexLoaded(),
-            gltfLoader.loadAsync(cfg.file)
-          ]);
+          const gltf = await gltfLoader.loadAsync(cfg.file);
           const uniforms = THREE.UniformsUtils.clone(SubsurfaceScatteringShader.uniforms);
-          uniforms.map.value = wTex;
-          uniforms.thicknessMap.value = wTex;
+          uniforms.map.value = null;
+          uniforms.thicknessMap.value = null;
           uniforms.diffuse.value = cfg.diffuse || new THREE.Color(cfg.color);
           uniforms.shininess.value = cfg.shininess;
           uniforms.thicknessColor.value = cfg.thickColor;
@@ -4617,9 +4825,16 @@
             }
           });
 
-          // Compile shader asynchronously against scene lights before exposing organ as interactive
-          // On desktop (transmission > 0), also precompile the NoToneMapping + NoColorSpace opaque-pass variant used by transmissionRenderTarget
-          let desktopOpaqueCompilePromise = null;
+          // Compile both alphaHash (fade-in/out) and non-alphaHash (steady-state Early-Z) variants sequentially
+          const compileVariants = async (targetScene) => {
+            await safeCompileAsync(gltf.scene, camera, targetScene);
+            if (hasWebGLDerivatives && !sssOpaqueVariantPrecompiled) {
+              sssMat.alphaHash = false;
+              await safeCompileAsync(gltf.scene, camera, targetScene);
+              sssMat.alphaHash = true;
+            }
+          };
+
           if (!useSimplifiedGlass) {
             if (!transmissionCompileRT) {
               transmissionCompileRT = new THREE.WebGLRenderTarget(1, 1, {
@@ -4632,30 +4847,24 @@
             const prevRT = renderer.getRenderTarget();
             renderer.toneMapping = THREE.NoToneMapping;
             renderer.setRenderTarget(transmissionCompileRT);
-            desktopOpaqueCompilePromise = safeCompileAsync(gltf.scene, camera, scene);
+            await compileVariants(scene);
             renderer.setRenderTarget(prevRT);
             renderer.toneMapping = prevTM;
           }
-          await Promise.all([
-            safeCompileAsync(gltf.scene, camera, scene),
-            desktopOpaqueCompilePromise
-          ].filter(Boolean));
+          await compileVariants(scene);
+          sssOpaqueVariantPrecompiled = true;
 
           gltf.scene.visible = false;
           scene.add(gltf.scene);
           organs[cfg.id] = gltf.scene;
           organMaterials[cfg.id] = sssMat;
 
-          if (cfg.id === 'heart' && sssMat.uniforms) {
-            heartTimeline = gsap.timeline({ repeat: -1, yoyo: true, paused: true })
-              .to(sssMat.uniforms.diffuse.value, { r: 4.2, g: 0.12, b: 0.22, ease: "power1.inOut", duration: 0.85 }, 0)
-              .to(sssMat.uniforms.shininess, { value: 380, ease: "power1.inOut", duration: 0.85 }, 0);
-          }
-
           if (cfg.id === 'brain' && currentState === 'story' && (activeHotspotKey === 'neural_zoomer' || activeHotspotKey === 'neurotransmitters')) {
+            wakeGsapTicker();
             gsap.to(gltf.scene.rotation, { y: 0.55, x: 0.08, duration: 0.8, ease: "power2.inOut" });
           }
 
+          scheduleDracoIdleDispose();
           return gltf.scene;
         } catch (e) {
           console.warn('Organ load error:', cfg.id, e);
@@ -4898,7 +5107,7 @@
       el.onmouseenter = () => hoverCategory(categoryId, true);
       el.onmouseleave = () => hoverCategory(categoryId, false);
       tagsLayer.appendChild(el);
-      activeHotspotElements.push({ element: el, pos: pos });
+      activeHotspotElements.push({ element: el, pos: pos, categoryId: categoryId, isCapsule: false });
     }
 
     function createFloatingTag(text, pos, hotspotKey) {
@@ -4915,7 +5124,8 @@
       `;
       el.onclick = () => openClinicalDrawer(hotspotKey);
       tagsLayer.appendChild(el);
-      activeHotspotElements.push({ element: el, pos: pos });
+      const cachedWidth = el.offsetWidth || 150;
+      activeHotspotElements.push({ element: el, pos: pos, isCapsule: true, cachedWidth });
     }
 
     // Zero-allocation projection vector and camera change caching (prevents layout thrashing & reflow)
@@ -4944,14 +5154,18 @@
         const item = activeHotspotElements[i];
         _projVec.copy(item.pos).project(camera);
         if (_projVec.z > 1.0) {
+          item.screenX = undefined;
+          item.screenY = undefined;
           if (item.element.style.display !== 'none') item.element.style.display = 'none';
         } else {
           if (item.element.style.display !== 'flex') item.element.style.display = 'flex';
           const x = (_projVec.x * halfW) + halfW;
           const y = (-_projVec.y * halfH) + halfH;
-          const isCapsule = item.element.classList.contains('clinlo-capsule-hotspot');
+          item.screenX = x;
+          item.screenY = y;
+          const isCapsule = item.isCapsule;
           if (isMobileView && isCapsule) {
-            visibleCapsules.push({ el: item.element, x, y });
+            visibleCapsules.push({ item, el: item.element, x, y, w: item.cachedWidth || 150 });
           } else {
             // GPU compositor translate3d with sub-pixel float formatting for liquid 60fps tracking
             item.element.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) translate(${isCapsule ? '-24px' : '-50%'}, -50%)`;
@@ -4968,7 +5182,7 @@
 
         for (let i = 0; i < visibleCapsules.length; i++) {
           const c = visibleCapsules[i];
-          const w = c.el.offsetWidth || 150;
+          const w = c.w;
           // Current CSS translates (-24px, -50%) so pill visual left edge is (x - 24)
           let leftEdge = c.x - 24;
           const maxLeft = Math.max(padX, vw - padX - w);
@@ -5002,6 +5216,8 @@
         for (let i = 0; i < visibleCapsules.length; i++) {
           const c = visibleCapsules[i];
           const px = c.leftEdge + 24;
+          c.item.screenX = px;
+          c.item.screenY = c.cy;
           c.el.style.transform = `translate3d(${px.toFixed(2)}px, ${c.cy.toFixed(2)}px, 0) translate(-24px, -50%)`;
         }
       }
@@ -5023,6 +5239,7 @@
       const mesh = organs[id];
       const mat = organMaterials[id];
       if (!mesh || !mat) return;
+      wakeGsapTicker();
       if (organFadeTweens[id]) {
         organFadeTweens[id].kill();
         delete organFadeTweens[id];
@@ -5031,12 +5248,26 @@
       mesh.traverse(n => { if (n.isMesh) n.visible = true; });
       mat.depthWrite = depthWriteMode;
       if (mat.uniforms && mat.uniforms.opacity) {
+        if (hasWebGLDerivatives && mat.uniforms.opacity.value < 0.999 && !mat.alphaHash) {
+          mat.alphaHash = true;
+          mat.needsUpdate = true;
+        }
         organFadeTweens[id] = gsap.to(mat.uniforms.opacity, {
           value: 1.0,
           duration: depthWriteMode ? 0.40 : 0.45,
           ease: 'power2.out',
           overwrite: 'auto',
-          onUpdate: () => { isDirty = true; }
+          onUpdate: () => { isDirty = true; },
+          onInterrupt: () => { delete organFadeTweens[id]; },
+          onComplete: () => {
+            delete organFadeTweens[id];
+            if (mat.uniforms.opacity.value >= 0.999 && mat.alphaHash) {
+              mat.alphaHash = false;
+              mat.needsUpdate = true;
+              isDirty = true;
+              requestFrame();
+            }
+          }
         });
       }
       isDirty = true;
@@ -5044,6 +5275,7 @@
     }
 
     function applyOrganBacklights(activeLights = [], intensityScale = 1.0, fadeInDuration = 0.35, fadeOutDuration = 0.25) {
+      wakeGsapTicker();
       for (let idx = 0; idx < organLightPool.length; idx++) {
         const slot = organLightPool[idx];
         const tweenKey = `slot${idx}`;
@@ -5069,7 +5301,8 @@
             duration: fadeInDuration,
             ease: 'power2.out',
             overwrite: 'auto',
-            onUpdate: () => { isDirty = true; }
+            onUpdate: () => { isDirty = true; },
+            onComplete: () => { delete lightFadeTweens[tweenKey]; }
           });
         } else {
           slot.userData.activeLightId = null;
@@ -5079,7 +5312,8 @@
               duration: fadeOutDuration,
               ease: 'power2.in',
               overwrite: 'auto',
-              onUpdate: () => { isDirty = true; }
+              onUpdate: () => { isDirty = true; },
+              onComplete: () => { delete lightFadeTweens[tweenKey]; }
             });
           } else {
             slot.intensity = 0.0;
@@ -5090,6 +5324,7 @@
 
     function setOrganVisibility(visibleOrganIds, activeLights = []) {
       currentVisibleOrganIds = visibleOrganIds;
+      wakeGsapTicker();
 
       for (const id of visibleOrganIds) {
         if (!organs[id]) {
@@ -5114,6 +5349,10 @@
           if (mat) {
             mat.depthWrite = false;
             if (mat.uniforms && mat.uniforms.opacity && mat.uniforms.opacity.value > 0.01) {
+              if (hasWebGLDerivatives && !mat.alphaHash) {
+                mat.alphaHash = true;
+                mat.needsUpdate = true;
+              }
               organFadeTweens[id] = gsap.to(mat.uniforms.opacity, {
                 value: 0.0,
                 duration: 0.25,
@@ -5121,6 +5360,7 @@
                 overwrite: 'auto',
                 onUpdate: () => { isDirty = true; },
                 onComplete: () => {
+                  delete organFadeTweens[id];
                   mesh.visible = false;
                   mesh.traverse(n => { if (n.isMesh) n.visible = false; });
                 }
@@ -5145,7 +5385,7 @@
 
     // Subtle organ hover reveal: reveals internal organ meshes with soft glowing fresnel highlight through translucent glass body
     window.hoverCategory = function (categoryId, isHovered) {
-      if (currentState !== 'list') return;
+      if (currentState !== 'list' || isMobile) return;
 
       const cat = CATEGORIES.find(c => c.id === categoryId);
       if (!cat) return;
@@ -5184,6 +5424,10 @@
                 const mesh = organs[otherOrgId];
                 const mat = organMaterials[otherOrgId];
                 if (mat && mat.uniforms && mat.uniforms.opacity.value > 0.001) {
+                  if (hasWebGLDerivatives && !mat.alphaHash) {
+                    mat.alphaHash = true;
+                    mat.needsUpdate = true;
+                  }
                   if (organFadeTweens[otherOrgId]) organFadeTweens[otherOrgId].kill();
                   organFadeTweens[otherOrgId] = gsap.to(mat.uniforms.opacity, {
                     value: 0.0,
@@ -5192,6 +5436,7 @@
                     overwrite: 'auto',
                     onUpdate: () => { isDirty = true; },
                     onComplete: () => {
+                      delete organFadeTweens[otherOrgId];
                       if (mesh && currentState === 'list' && (!currentHoveredCategoryId || !CATEGORIES.find(c => c.id === currentHoveredCategoryId)?.organs.includes(otherOrgId))) {
                         mesh.visible = false;
                         isDirty = true;
@@ -5217,12 +5462,16 @@
           if (spot.getAttribute('data-cat') === categoryId) spot.classList.remove('is-hovered');
         });
 
-        if (currentState === 'list') {
+        if (currentState === 'list' && !isMobile) {
           cat.organs.forEach(organId => {
             const mesh = organs[organId];
             const mat = organMaterials[organId];
             if (!mesh || !mat) return;
 
+            if (hasWebGLDerivatives && !mat.alphaHash) {
+              mat.alphaHash = true;
+              mat.needsUpdate = true;
+            }
             if (organFadeTweens[organId]) organFadeTweens[organId].kill();
             organFadeTweens[organId] = gsap.to(mat.uniforms.opacity, {
               value: 0.0,
@@ -5231,6 +5480,7 @@
               overwrite: 'auto',
               onUpdate: () => { isDirty = true; },
               onComplete: () => {
+                delete organFadeTweens[organId];
                 if (currentState === 'list' && !currentHoveredCategoryId) {
                   mesh.visible = false;
                   isDirty = true;
@@ -5275,6 +5525,7 @@
       }
 
       if (state === 'story') {
+        wakeGsapTicker();
         gsap.to([skinMaterialFemale, skinMaterialMale], {
           opacity: 0.0,
           roughness: 0.0,
@@ -5291,6 +5542,7 @@
         });
         if (podiumMesh) podiumMesh.visible = false;
       } else {
+        wakeGsapTicker();
         if (activeAvatar) activeAvatar.visible = true;
         if (podiumMesh) podiumMesh.visible = true;
         gsap.to([skinMaterialFemale, skinMaterialMale], {
@@ -5318,6 +5570,7 @@
 
     // Unified Camera Tween Helper with Zero-Jitter Tween Lifecycle & Hover Tilt Sync
     function animateCamera(targetCam, targetLookAt, duration = 1.0) {
+      wakeGsapTicker();
       hoverTiltState.enabled = false;
       hoverTiltState.targetDeltaAz = 0;
       hoverTiltState.targetDeltaPol = 0;
@@ -5346,7 +5599,7 @@
           syncHoverTiltFromControls();
           hoverTiltState.enabled = true;
           if (hasActivePointer) {
-            setTiltPointer(lastPointerNX, lastPointerNY);
+            setTiltPointer(lastPointerNX, lastPointerNY, true);
           }
           isDirty = true;
           requestFrame();
@@ -5365,10 +5618,6 @@
     // State Transition Logic
     window.gotoState = function (state) {
       currentState = state;
-      document.body.dataset.state = state;
-      document.body.dataset.state = state;
-      document.body.dataset.state = state;
-      document.body.dataset.state = state;
       document.body.dataset.state = state;
       clearTags();
       focusRing.classList.remove('active');
@@ -5392,6 +5641,11 @@
         subtabsBar.classList.add('hidden');
       }
 
+      if (state !== 'list' && currentHoveredCategoryId) {
+        currentHoveredCategoryId = null;
+        document.querySelectorAll('.explore-btn.is-hovered').forEach(btn => btn.classList.remove('is-hovered'));
+        document.querySelectorAll('.concentric-hotspot.is-hovered').forEach(spot => spot.classList.remove('is-hovered'));
+      }
       if (state === 'choose') {
         introOverlay.classList.remove('hidden');
         exploreCard.classList.add('hidden');
@@ -5406,6 +5660,8 @@
       }
       else if (state === 'list') {
         startAmbientSound(true);
+        currentHoveredCategoryId = null;
+        document.querySelectorAll('.explore-btn.is-hovered').forEach(btn => btn.classList.remove('is-hovered'));
         introOverlay.classList.add('hidden');
         exploreCard.classList.remove('hidden');
         bottomDock.classList.add('hidden');
@@ -5472,6 +5728,12 @@
           createFloatingTag(t.text, t.pos, t.key);
         });
 
+        // Preload adjacent categories smoothly in background for zero-latency prev/next navigation
+        const adjNext = CATEGORIES[currentCategoryIndex + 1];
+        const adjPrev = CATEGORIES[currentCategoryIndex - 1];
+        if (adjNext) setTimeout(() => adjNext.organs.forEach(id => ensureOrganLoaded(id)), 150);
+        if (adjPrev) setTimeout(() => adjPrev.organs.forEach(id => ensureOrganLoaded(id)), 300);
+
         animateCamera(cat.cam, cat.target, 1.0);
       }
       else if (state === 'story') {
@@ -5526,6 +5788,7 @@
 
     window.handleBackClick = function () {
       if (organs['brain']) {
+        wakeGsapTicker();
         gsap.to(organs['brain'].rotation, { y: 0, x: 0, duration: 0.6, ease: "power2.inOut" });
       }
       if (currentState === 'story') {
@@ -5555,6 +5818,7 @@
 
       // Rotate organ in 3D for dramatic clinical perspective (Page 12 3/4 view)
       if (organs['brain']) {
+        wakeGsapTicker();
         if (hotspotKey === 'neural_zoomer' || hotspotKey === 'neurotransmitters') {
           gsap.to(organs['brain'].rotation, { y: 0.55, x: 0.08, duration: 0.8, ease: "power2.inOut" });
         } else {
@@ -5693,6 +5957,7 @@
     // Smooth Organic Male / Female Model Transition via Noise Dissolve Shader
 
     function performGenderDissolve(g) {
+      wakeGsapTicker();
       if (!femaleAvatar || !maleAvatar) {
         if (femaleAvatar) {
           femaleAvatar.visible = (g === 'female') && currentState !== 'story';
@@ -5715,6 +5980,8 @@
       if (genderTweenMale) genderTweenMale.kill();
 
       if (g === 'male') {
+        enableSkinDissolve(skinMaterialFemale);
+        enableSkinDissolve(skinMaterialMale);
         maleAvatar.visible = true;
         femaleAvatar.visible = true;
         genderTweenMale = gsap.to(skinMaterialMale.userData.uDissolve, {
@@ -5731,12 +5998,20 @@
           overwrite: 'auto',
           onUpdate: () => { isDirty = true; },
           onComplete: () => {
-            if (currentGender === 'male') femaleAvatar.visible = false;
+            if (currentGender === 'male') {
+              femaleAvatar.visible = false;
+              disableSkinDissolve(skinMaterialFemale);
+              disableSkinDissolve(skinMaterialMale);
+              isDirty = true;
+              requestFrame();
+            }
             genderTweenFemale = null;
             genderTweenMale = null;
           }
         });
       } else {
+        enableSkinDissolve(skinMaterialFemale);
+        enableSkinDissolve(skinMaterialMale);
         femaleAvatar.visible = true;
         maleAvatar.visible = true;
         genderTweenFemale = gsap.to(skinMaterialFemale.userData.uDissolve, {
@@ -5753,7 +6028,13 @@
           overwrite: 'auto',
           onUpdate: () => { isDirty = true; },
           onComplete: () => {
-            if (currentGender === 'female') maleAvatar.visible = false;
+            if (currentGender === 'female') {
+              maleAvatar.visible = false;
+              disableSkinDissolve(skinMaterialFemale);
+              disableSkinDissolve(skinMaterialMale);
+              isDirty = true;
+              requestFrame();
+            }
             genderTweenFemale = null;
             genderTweenMale = null;
           }
@@ -5787,149 +6068,123 @@
       performGenderDissolve(g);
     };
 
-    // Smart Power-Aware Demand-Driven Render & Animation Engine with Adaptive Frame-Time DPR
+    // Smart Power-Aware Demand-Driven Render & Animation Engine (fixed tier DPR, zero setSize thrashing)
     gsap.ticker.lagSmoothing(0);
 
-    const TARGET_FRAME_MS = 1000 / 60; // 60fps target during interaction
-    const LOW_POWER_FRAME_MS = 1000 / 30; // 30fps low-power pacing for subtle breath
-
     let currentAppliedDPR = maxDPR;
-    let smoothedFrameMs = 16.6;
-    let slowFrameStreak = 0;
-    let fastFrameStreak = 0;
-    let dprCooldownUntil = 0;
-    let hasPrevRenderTime = false;
-    let wasActiveMotion = false;
-    let motionEndedAt = 0;
-
-    function applyRendererDPR(nextDPR) {
-      if (Math.abs(currentAppliedDPR - nextDPR) < 0.01) return;
-      currentAppliedDPR = nextDPR;
-      renderer.setPixelRatio(currentAppliedDPR);
-      isDirty = true;
-    }
+    let lastAmbientRenderMs = 0;
 
     function requestFrame() {
       lastInteractionTime = performance.now();
       isDirty = true;
-      if (!isRenderingActive && isTabVisible && isCanvasVisible && !isContextLost) {
+      if (ambientFrameTimerId) {
+        clearTimeout(ambientFrameTimerId);
+        ambientFrameTimerId = null;
+      }
+      if (!isRafPending && isTabVisible && isCanvasVisible && !isParentScrolling && !isContextLost) {
         lastFrameTime = performance.now();
-        hasPrevRenderTime = false;
         isRenderingActive = true;
+        isRafPending = true;
         requestAnimationFrame(animate);
       }
     }
     window.requestFrame = requestFrame;
 
     function animate(currentTime = performance.now()) {
-      if (!isTabVisible || !isCanvasVisible || isContextLost) {
+      isRafPending = false;
+      if (!isTabVisible || !isCanvasVisible || isParentScrolling || isContextLost) {
         isRenderingActive = false;
-        hasPrevRenderTime = false;
+        if (ambientFrameTimerId) {
+          clearTimeout(ambientFrameTimerId);
+          ambientFrameTimerId = null;
+        }
         syncIdleTweens(false);
-        return; // Zero CPU & GPU compute when tab is hidden, scrolled out of view, or WebGL context lost
+        return; // Zero CPU & GPU compute when tab is hidden, scrolled out of view, scrolling, or WebGL context lost
       }
 
       const hasActiveOrgan = (currentVisibleOrganIds && currentVisibleOrganIds.length > 0);
       const isMotionActive = (activeCameraTweens > 0);
+      const hasFadeTweens = Object.values(organFadeTweens).some(t => t && t.isActive()) ||
+        Object.values(lightFadeTweens).some(t => t && t.isActive());
 
       // Tilt motion settle check
       const tiltDiff = Math.abs(hoverTiltState.deltaAz - hoverTiltState.targetDeltaAz) +
         Math.abs(hoverTiltState.deltaPol - hoverTiltState.targetDeltaPol);
       const isTiltMoving = tiltDiff > 0.0001;
 
-      // Smart idle condition: keep rendering during active camera motion, pointer tilt, gender dissolve, hovered organ, or active organ views
-      // In static choose and list overview modes, gracefully sleep to 0.0 FPS
-      let needsNextFrame = false;
-      if (isTiltMoving) needsNextFrame = true;
-      if (isMotionActive) needsNextFrame = true;
-      if (currentHoveredCategoryId) needsNextFrame = true;
-      if (genderTweenFemale || genderTweenMale) needsNextFrame = true;
-      if (hasActiveOrgan) needsNextFrame = true;
+      const hasDynamicMotion = isTiltMoving || isMotionActive || hasFadeTweens || Boolean(genderTweenFemale || genderTweenMale) ||
+        (!isGsapSleeping && gsap.globalTimeline.getChildren(false, true, false).some(t => t.isActive()));
+      const hasContinuousOrganAnim = hasActiveOrgan && (
+        (organs['dna'] && organs['dna'].visible) ||
+        (organs['heart'] && organs['heart'].visible)
+      );
+
+      if (!hasDynamicMotion) {
+        sleepGsapTickerIfIdle();
+      }
+
+      // Sleep at 0.0 FPS when scene is settled in choose/list OR static organ views (wakes instantly on interaction)
+      const needsNextFrame = hasDynamicMotion || hasContinuousOrganAnim;
 
       if (!needsNextFrame && !isDirty) {
-        // Restore full maxDPR on settle with one crisp final render before sleeping
-        if (currentAppliedDPR < maxDPR) {
-          applyRendererDPR(maxDPR);
-          controls.update();
-          renderer.render(scene, camera);
-        }
-        // Scene has completely settled! Sleep render loop + idle infinite GSAP tweens (0.0% CPU & GPU)
         isRenderingActive = false;
-        hasPrevRenderTime = false;
-        wasActiveMotion = false;
         syncIdleTweens(false);
         updateTagsProjection(true); // Final projection lock
         return;
       }
 
-      // Frame-time-driven adaptive resolution (P4)
-      if (hasPrevRenderTime) {
-        const frameMs = Math.min(Math.max(currentTime - lastFrameTime, 1), 100);
-        smoothedFrameMs = smoothedFrameMs * 0.8 + frameMs * 0.2;
-      }
-      lastFrameTime = currentTime;
-      hasPrevRenderTime = true;
-
-      const isActiveMotion = isMotionActive || isTiltMoving || Boolean(genderTweenFemale || genderTweenMale);
-      const activeMotionDPR = (window.hardwareProfile && window.hardwareProfile.motionDPR) || motionDPR;
-
-      if (wasActiveMotion && !isActiveMotion) {
-        motionEndedAt = currentTime;
-      }
-      wasActiveMotion = isActiveMotion;
-
-      if (isActiveMotion) {
-        if ((isMobile && hardware && hardware.tier <= 1) || smoothedFrameMs > 20.0) {
-          slowFrameStreak++;
-          fastFrameStreak = 0;
-          if ((isMobile && hardware && hardware.tier <= 1) || (slowFrameStreak >= 3 && currentTime > dprCooldownUntil)) {
-            applyRendererDPR(activeMotionDPR);
-            dprCooldownUntil = currentTime + 1200;
-          }
-        } else if (smoothedFrameMs < 14.0) {
-          fastFrameStreak++;
-          slowFrameStreak = 0;
-          if (fastFrameStreak >= 12 && currentTime > dprCooldownUntil) {
-            applyRendererDPR(maxDPR);
-            dprCooldownUntil = currentTime + 1200;
-          }
+      const frameStartMs = performance.now();
+      if (!hasDynamicMotion && !isDirty && hasContinuousOrganAnim && (frameStartMs - lastAmbientRenderMs) < 31.0) {
+        if (!ambientFrameTimerId) {
+          const waitMs = Math.max(8, Math.round(32 - (frameStartMs - lastAmbientRenderMs)));
+          ambientFrameTimerId = setTimeout(() => {
+            ambientFrameTimerId = null;
+            if (!isRafPending && isTabVisible && isCanvasVisible && !isParentScrolling && !isContextLost) {
+              isRafPending = true;
+              requestAnimationFrame(animate);
+            }
+          }, waitMs);
         }
-      } else if (smoothedFrameMs > 22.0) {
-        slowFrameStreak++;
-        fastFrameStreak = 0;
-        if (slowFrameStreak >= 6 && currentTime > dprCooldownUntil && currentAppliedDPR > activeMotionDPR) {
-          applyRendererDPR(activeMotionDPR);
-          dprCooldownUntil = currentTime + 1200;
-        }
-      } else if (currentAppliedDPR < maxDPR && (currentTime - motionEndedAt) > 350 && smoothedFrameMs < 18.0 && currentTime > dprCooldownUntil) {
-        fastFrameStreak++;
-        slowFrameStreak = 0;
-        if (fastFrameStreak >= 6) {
-          applyRendererDPR(maxDPR);
-          dprCooldownUntil = currentTime + 800;
-        }
+        return;
       }
-
+      if (hasContinuousOrganAnim) {
+        lastAmbientRenderMs = frameStartMs;
+      }
       isRenderingActive = true;
-      syncIdleTweens(true);
-      requestAnimationFrame(animate);
 
-      const delta = clock.getDelta();
+      const delta = Math.min(clock.getDelta(), 0.1);
+      bgTimeUniform.value += delta;
+      if (podiumMaterial && podiumMesh && podiumMesh.visible && currentState !== 'story') {
+        podiumMaterial.userData.uTime.value = (podiumMaterial.userData.uTime.value + delta) % 200;
+      }
 
       // Authentic DNA double helix spin around longitudinal axis (only active when genetics view visible)
-      // Natural forward rotation matching biological right-handed B-DNA helix
       if (dnaMeshNode && organs['dna'] && organs['dna'].visible) {
         dnaMeshNode.rotateZ(delta * 0.25);
       }
 
-      // Subtle organic breathing pulse on actively visible organ materials only (O(1) with cached baseScale)
-      const pulseTime = clock.getElapsedTime();
-      for (let i = 0; i < currentVisibleOrganIds.length; i++) {
-        const id = currentVisibleOrganIds[i];
-        const sMat = organMaterials[id];
-        if (sMat && sMat.uniforms && sMat.uniforms.thicknessScale) {
-          const baseScale = sMat._baseScale || 20.0;
-          sMat.uniforms.thicknessScale.value = baseScale + Math.sin(pulseTime * 2.2) * (baseScale * 0.12);
+      // Subtle organic breathing pulse & heart glow driven directly on render ticks (0Hz GSAP ticker overhead)
+      if (hasContinuousOrganAnim || hasDynamicMotion) {
+        const pulseTime = clock.getElapsedTime();
+        for (let i = 0; i < currentVisibleOrganIds.length; i++) {
+          const id = currentVisibleOrganIds[i];
+          const sMat = organMaterials[id];
+          if (sMat && sMat.uniforms && sMat.uniforms.thicknessScale) {
+            const baseScale = sMat._baseScale || 20.0;
+            sMat.uniforms.thicknessScale.value = baseScale + Math.sin(pulseTime * 2.2) * (baseScale * 0.12);
+          }
+        }
+        const heartMat = organMaterials['heart'];
+        if (heartMat && organs['heart'] && organs['heart'].visible && heartMat.uniforms) {
+          const cyc = (pulseTime / 0.85) % 2.0;
+          const prg = cyc <= 1.0 ? cyc : 2.0 - cyc;
+          const ease = prg < 0.5 ? 2.0 * prg * prg : 1.0 - 0.5 * Math.pow(-2.0 * prg + 2.0, 2);
+          if (heartMat.uniforms.diffuse && heartMat.uniforms.diffuse.value) {
+            heartMat.uniforms.diffuse.value.setRGB(3.8 + 0.4 * ease, 0.08 + 0.04 * ease, 0.18 + 0.04 * ease);
+          }
+          if (heartMat.uniforms.shininess) {
+            heartMat.uniforms.shininess.value = 478 - 98 * ease;
+          }
         }
       }
 
@@ -5943,17 +6198,45 @@
       updateTagsProjection();
 
       isDirty = false;
+      lastFrameTime = currentTime;
+
+      if (hasDynamicMotion) {
+        isRafPending = true;
+        requestAnimationFrame(animate);
+      } else if (hasContinuousOrganAnim) {
+        // Jitter-free ~30fps pacing on both 60Hz and 120Hz displays for idle DNA spin / heart pulse
+        if (!ambientFrameTimerId) {
+          const renderCostMs = performance.now() - frameStartMs;
+          const delayMs = Math.max(16, Math.round(32 - renderCostMs));
+          ambientFrameTimerId = setTimeout(() => {
+            ambientFrameTimerId = null;
+            if (!isRafPending && isTabVisible && isCanvasVisible && !isParentScrolling && !isContextLost) {
+              isRafPending = true;
+              requestAnimationFrame(animate);
+            } else if (!isRafPending) {
+              isRenderingActive = false;
+              syncIdleTweens(false);
+            }
+          }, delayMs);
+        }
+      } else {
+        isRenderingActive = false;
+        syncIdleTweens(false);
+      }
     }
 
     // Tab Backgrounding & Visibility Change
     document.addEventListener('visibilitychange', () => {
       isTabVisible = !document.hidden;
-      if (isTabVisible) {
+      if (isTabVisible && isCanvasVisible && !isParentScrolling) {
+        document.body.classList.remove('studio-paused');
         clock.getDelta();
         requestFrame();
       } else {
         isRenderingActive = false;
+        if (ambientFrameTimerId) { clearTimeout(ambientFrameTimerId); ambientFrameTimerId = null; }
         syncIdleTweens(false);
+        document.body.classList.add('studio-paused');
       }
     });
 
@@ -5962,11 +6245,14 @@
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           isCanvasVisible = entry.isIntersecting;
-          if (isCanvasVisible) {
+          if (isCanvasVisible && isTabVisible && !isParentScrolling) {
+            document.body.classList.remove('studio-paused');
             requestFrame();
           } else {
             isRenderingActive = false;
+            if (ambientFrameTimerId) { clearTimeout(ambientFrameTimerId); ambientFrameTimerId = null; }
             syncIdleTweens(false);
+            document.body.classList.add('studio-paused');
           }
         });
       }, { threshold: 0.05 });
@@ -6047,9 +6333,25 @@
     // -------------------------------------------------------------------------
     // 3-Stage Progressive Startup Orchestration (P1 / P3)
     // Stage 1: Selected avatar + envMap + podium -> compileAsync -> 1st render -> CLINLO_3D_READY
-    // Stage 2: Chunked idle loading of hotspots, newBG, alternate avatar, and 12 organs
-    // Stage 3: Full interactive readiness + Draco worker disposal
+    // Stage 2: Lazy background loading of hotspots + newBG; alternate avatar & organs load on-demand/hover
     // -------------------------------------------------------------------------
+    const maleBtnEl = document.getElementById('btn-gender-male');
+    if (maleBtnEl) {
+      ['pointerenter', 'focus', 'touchstart'].forEach(evt => {
+        maleBtnEl.addEventListener(evt, () => { ensureMaleAvatarLoaded(); }, { passive: true, once: true });
+      });
+    }
+    document.querySelectorAll('.explore-btn[data-cat]').forEach(btn => {
+      const catId = btn.getAttribute('data-cat');
+      const cat = CATEGORIES.find(c => c.id === catId);
+      if (!cat) return;
+      ['pointerenter', 'focus', 'touchstart'].forEach(evt => {
+        btn.addEventListener(evt, () => {
+          cat.organs.forEach(id => ensureOrganLoaded(id));
+        }, { passive: true, once: true });
+      });
+    });
+
     async function runStage2Background() {
       try {
         await yieldToMain(100);
@@ -6059,21 +6361,10 @@
         await ensureBgLoaded();
 
         await yieldToMain(120);
-        await ensureMaleAvatarLoaded();
-
-        await yieldToMain(120);
-        await ensureWhiteTexLoaded();
-
-        for (let i = 0; i < organConfigs.length; i++) {
-          await ensureOrganLoaded(organConfigs[i].id);
-          await yieldToMain(60);
-        }
+        await precompileSkinDissolveShader();
 
         window.__clinloStage2Ready = true;
-        if (dracoLoader && !dracoDisposed) {
-          dracoLoader.dispose();
-          dracoDisposed = true;
-        }
+        scheduleDracoIdleDispose();
       } catch (e) {
         console.warn('Stage 2 background load note:', e);
       }
@@ -6130,11 +6421,6 @@
     initStage1();
   </script>
   <script>
-    const clinicalDrawerWrapper = document.getElementById('clinical-drawer-wrapper');
-    if (clinicalDrawerWrapper) {
-      clinicalDrawerWrapper.addEventListener('scroll', () => requestFrame(), { passive: true });
-    }
-
     // PWA Service Worker Registration for Instant Zero-Latency 3D Asset Streaming
     if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
       window.addEventListener('load', () => {

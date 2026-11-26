@@ -2,34 +2,28 @@
 // Cache-First strategy scoped to 3D binary assets (/models/, /texture/, /map/, /draco/)
 // and immutable core 3D runtime modules. Never intercepts HTML, /api/, non-GET, or cross-origin requests.
 
-const CACHE_NAME = 'clinlo-3d-cache-v7';
+const CACHE_NAME = 'clinlo-3d-cache-v10';
 
 // Core lightweight runtime, decoder & shared textures cached on install;
 // large .glb models are cached lazily on first fetch (Cache-First) so initial page load stays fast.
 const PRECACHE_ASSETS = [
-  './three.module.js',
   './three.module.min.js',
   './gsap.min.js',
-  './OrbitControls.js',
   './GLTFLoader.js',
   './DRACOLoader.js',
   './SubsurfaceScatteringShader.js',
   './branding/clinlo_3d_poster.webp',
-  './branding/clinlo_3d_poster_mobile.webp',
   './fonts/PlusJakartaSans-latin.woff2',
   './fonts/UbuntuMono-400-latin.woff2',
   './fonts/UbuntuMono-700-latin.woff2',
   './draco/draco_decoder.wasm',
   './draco/draco_wasm_wrapper.js',
-  './texture/white.jpg',
-  './texture/mats/mat20.png'
+  './texture/mats/mat20.webp'
 ];
 
 const CORE_CACHEABLE_PATHS = new Set([
-  '/three.module.js',
   '/three.module.min.js',
   '/gsap.min.js',
-  '/OrbitControls.js',
   '/GLTFLoader.js',
   '/DRACOLoader.js',
   '/SubsurfaceScatteringShader.js',
